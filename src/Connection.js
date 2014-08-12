@@ -1,7 +1,7 @@
 ﻿var events = require('events');
+
 var protocol = require('./protocol.js');
 
-var EventEmitter = events.EventEmitter;
 var MESSAGE_TYPE = protocol.MESSAGE_TYPE;
 var PROTOCOL_NAME = protocol.NAME;
 
@@ -10,7 +10,7 @@ var Connection = (function () {
         this.address = address;
         this.peers = peers;
         this.connection = connection;
-        this.emitter = new EventEmitter();
+        this.emitter = new events.EventEmitter();
 
         connection.on('message', this.messageHandler.bind(this));
         connection.on('close', this.closeHandler.bind(this));
@@ -82,4 +82,5 @@ var Connection = (function () {
     };
     return Connection;
 })();
-//# sourceMappingURL=Connection.js.map
+exports.Connection = Connection;
+//# sourceMappingURL=connection.js.map

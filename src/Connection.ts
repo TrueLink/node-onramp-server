@@ -1,35 +1,41 @@
 ﻿import events = require('events');
+import connectionManager = require("./connection-manager");
 var protocol = require('./protocol.js');
 
-var EventEmitter = events.EventEmitter;
 var MESSAGE_TYPE = protocol.MESSAGE_TYPE;
 var PROTOCOL_NAME = protocol.NAME;
 
-interface ConnectionAPI {
+export interface API {
     address: string;
     send(message: string): void;
+    relay(remoteId: string, message: string): void;
+    relayed(remoteId: string, message: string): void;
+    on(event: string, listener: Function): events.EventEmitter;
+    removeListener(event: string, listener: Function): events.EventEmitter;
 }
 
-class Connection {
-    private address: string;
-    private emitter: EventEmitter;
+export class Connection {
+    public address: string;
+    private emitter: events.EventEmitter;
+    private peers: connectionManager.ConnectionManager;
+    private connection: any;
 
-    constructor(address: string, peers, connection) {
+    constructor(address: string, peers: connectionManager.ConnectionManager, connection) {
         this.address = address;
         this.peers = peers;
         this.connection = connection;
-        this.emitter = new EventEmitter();
+        this.emitter = new events.EventEmitter();
 
         connection.on('message', this.messageHandler.bind(this));
         connection.on('close', this.closeHandler.bind(this));
     }
 
-    static create(address: string, peers, raw) {
+    static create(address: string, peers, raw): API {
         var intance = new Connection(address, peers, raw);
         return intance.getApi();
     }
 
-    private getApi(): ConnectionAPI {
+    private getApi(): API {
         return {
             address: this.address,
             send: this.send.bind(this),
@@ -77,18 +83,18 @@ class Connection {
         this.connection.sendUTF(stringified);
     }
 
-    private relayHandler(destination, message) {
+    private relayHandler(destination: string, message) {
         var peer = this.peers.get(destination);
         if (!peer) return;
 
         peer.relayed(this.address, message);
     }
 
-    private relay(remoteId, message) {
+    private relay(remoteId: string, message: string) {
         this.sendProtocolMessage([MESSAGE_TYPE.RELAY, remoteId, message]);
     }
 
-    private relayed(remoteId, message) {
+    private relayed(remoteId: string, message: string) {
         this.sendProtocolMessage([MESSAGE_TYPE.RELAYED, remoteId, message]);
     }
 }

@@ -34,11 +34,11 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="server.ts" />
     <TypeScriptCompile Include="src\connection-manager.ts" />
-    <TypeScriptCompile Include="src\_connection.ts" />
+    <TypeScriptCompile Include="src\connection.ts" />
     <TypeScriptCompile Include="typings\node-uuid\node-uuid.d.ts" />
     <TypeScriptCompile Include="typings\node\node.d.ts" />
-    <TypeScriptCompile Include="server.ts" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="typings\tsd.d.ts" />

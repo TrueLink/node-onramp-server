@@ -1,0 +1,18 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "typings",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "node/node.d.ts": {
+      "commit": "d4b55bafc0c9c4a2338cb427a4eeaf6023f12a24"
+    },
+    "node-uuid/node-uuid.d.ts": {
+      "commit": "d4b55bafc0c9c4a2338cb427a4eeaf6023f12a24"
+    },
+    "websocket/websocket.d.ts": {
+      "commit": "d4b55bafc0c9c4a2338cb427a4eeaf6023f12a24"
+    }
+  }
+}

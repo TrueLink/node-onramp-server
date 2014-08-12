@@ -83,4 +83,4 @@ var Connection = (function () {
     return Connection;
 })();
 exports.Connection = Connection;
-//# sourceMappingURL=connection.js.map
+//# sourceMappingURL=_connection.js.map

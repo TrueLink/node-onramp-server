@@ -34,15 +34,22 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
+    <TypeScriptCompile Include="src\connection-manager.ts" />
+    <TypeScriptCompile Include="src\_connection.ts" />
+    <TypeScriptCompile Include="typings\node-uuid\node-uuid.d.ts" />
+    <TypeScriptCompile Include="typings\node\node.d.ts" />
     <TypeScriptCompile Include="server.ts" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="typings\tsd.d.ts" />
+    <TypeScriptCompile Include="typings\websocket\websocket.d.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Scripts\" />
-    <Folder Include="Scripts\typings\" />
-    <Folder Include="Scripts\typings\node\" />
+    <Folder Include="src\" />
+    <Folder Include="typings\" />
+    <Folder Include="typings\node-uuid\" />
+    <Folder Include="typings\node\" />
+    <Folder Include="typings\websocket\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
   <ProjectExtensions>

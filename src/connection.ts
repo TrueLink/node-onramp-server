@@ -1,6 +1,7 @@
 ﻿import events = require('events');
+import websocket = require('websocket');
 import connectionManager = require("./connection-manager");
-var protocol = require('./protocol.js');
+import protocol = require('./protocol');
 
 var MESSAGE_TYPE = protocol.MESSAGE_TYPE;
 var PROTOCOL_NAME = protocol.NAME;
@@ -18,9 +19,9 @@ export class Connection {
     public address: string;
     private emitter: events.EventEmitter;
     private peers: connectionManager.ConnectionManager;
-    private connection: any;
+    private connection: websocket.connection;
 
-    constructor(address: string, peers: connectionManager.ConnectionManager, connection) {
+    constructor(address: string, peers: connectionManager.ConnectionManager, connection: websocket.connection) {
         this.address = address;
         this.peers = peers;
         this.connection = connection;
@@ -98,3 +99,4 @@ export class Connection {
         this.sendProtocolMessage([MESSAGE_TYPE.RELAYED, remoteId, message]);
     }
 }
+

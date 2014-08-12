@@ -3,14 +3,18 @@ import uuid = require('node-uuid');
 import events = require('events');
 import websocket = require('websocket');
 
+import connectionManager = require("./connection-manager");
+import connection = require("./connection");
+import protocol = require("./protocol");
+
 class Server {
     static DEFAULT_PORT: number = 20500;
 
     public wsServer: websocket.server;
     public emitter: events.EventEmitter;
-    public peers: ConnectionManager;
+    public peers: connectionManager.ConnectionManager;
 
-    constructor(wsServer: websocket.server, connectionManager: ConnectionManager) {
+    constructor(wsServer: websocket.server, connectionManager: connectionManager.ConnectionManager) {
         var emitter = this.emitter = new events.EventEmitter();
         this.wsServer = wsServer;
 
@@ -46,57 +50,50 @@ class Server {
             options.port = Server.DEFAULT_PORT;
         }
 
+        if (!('httpServer' in options)) {
+            options.httpServer = http.createServer();
+
+            console.log('onramp listening on ' + (options.hostname ? options.hostname : "*") + ":" + options.port);
+
+            options.httpServer.listen(options.port, options.hostname || void 0);
+        }
+
+        if (!('wsServer' in options)) {
+            options.wsServer = new websocket.server({
+                httpServer: options.httpServer,
+                autoAcceptConnections: false
+            });
+        }
+
+        var connectionManager = new connectionManager.ConnectionManager();
+
+        var server = new Server(options.wsServer, connectionManager);
+        return server.getApi();
     }
 
-    public connectionHandler(request) {
+    private connectionHandler(request: websocket.request) {
         var address = uuid.v4(),
             peers = this.peers,
-            peer = Connection.create(address, this.peers, request.accept(PROTOCOL_NAME, request.origin));
+            peer = connection.Connection.create(address, this.peers, request.accept(protocol.name, request.origin));
 
         peers.add(peer);
 
         peer.on('close', function () {
             peers.remove(peer);
         });
-    };
-
-}
-
-// constructor function
-Server.create = function (options) {
-
-
-    if (!('httpServer' in options)) {
-        options.httpServer = http.createServer();
-
-        console.log('onramp listening on ' + (options.hostname ? options.hostname : "*") + ":" + options.port);
-
-        options.httpServer.listen(options.port, options.hostname || void 0);
     }
 
-    if (!('wsServer' in options)) {
-        options.wsServer = new websocket.server({
-            httpServer: options.httpServer,
-            autoAcceptConnections: false
+    private getApi() {
+        var api = {
+            on: this.emitter.on.bind(this.emitter),
+            removeListener: this.emitter.removeListener.bind(this.emitter)
+        };
+
+        Object.defineProperty(api, 'connections', {
+            get: this.peers.get.bind(this.peers)
         });
+
+        return api;
     }
-
-    var connectionManager = new ConnectionManager();
-
-    var server = new Server(options.wsServer, connectionManager);
-    return server.getApi();
-};
-
-Server.prototype.getApi = function () {
-    var api = {};
-
-    api.on = this.emitter.on.bind(this.emitter);
-    api.removeListener = this.emitter.removeListener.bind(this.emitter);
-
-    Object.defineProperty(api, 'connections', {
-        get: this.peers.get.bind(this.peers)
-    });
-
-    return api;
-};
+}
 

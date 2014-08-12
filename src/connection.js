@@ -1,6 +1,6 @@
 ﻿var events = require('events');
 
-var protocol = require('./protocol.js');
+var protocol = require('./protocol');
 
 var MESSAGE_TYPE = protocol.MESSAGE_TYPE;
 var PROTOCOL_NAME = protocol.NAME;

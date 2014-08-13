@@ -1,7 +1,7 @@
 {
-  "name": "NodejsWebApp1",
-  "version": "0.0.0",
-  "description": "NodejsWebApp1",
+  "name": "node-onramp-server",
+  "version": "0.0.1",
+  "description": "",
   "main": "app.js",
   "author": {
     "name": "Eugene",

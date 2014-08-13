@@ -1,35 +1,43 @@
-﻿export var name: string = "rampage";
+﻿// This module should be common for client and server. 
 
-export var MESSAGE_TYPE_PLAIN = 0;
+export var name: string = "rampage";
 
-export var MESSAGE_TYPE_RELAY = 10;
-export var MESSAGE_TYPE_RELAYED = 11;
+export var MESSAGE_TYPE_PEER_CONNECTED = 1;
+export var MESSAGE_TYPE_PEER_DICONNECTED = 2;
 
-export var MESSAGE_TYPE_RTC_OFFER = 20;
-export var MESSAGE_TYPE_RTC_ANSWER = 21;
-export var MESSAGE_TYPE_RTC_ICE_CANDIDATE = 22;
+export var MESSAGE_TYPE_RELAY = 11;
+export var MESSAGE_TYPE_RELAYED = 12;
+
+export var MESSAGE_TYPE_RTC_OFFER = 21;
+export var MESSAGE_TYPE_RTC_ANSWER = 22;
+export var MESSAGE_TYPE_RTC_ICE_CANDIDATE = 23;
 
 
 export function parse(plain: any): Message {
     var type = plain["type"];
     switch (type) {
-        case MESSAGE_TYPE_PLAIN: return new PlainMessage(plain);
-        case MESSAGE_TYPE_PLAIN: return new PlainMessage(plain);
-        case MESSAGE_TYPE_PLAIN: return new PlainMessage(plain);
+        case MESSAGE_TYPE_PEER_CONNECTED: return new ConnectedMessage(plain);
+        case MESSAGE_TYPE_PEER_DICONNECTED: return new DiconnectedMessage(plain);
+        case MESSAGE_TYPE_RELAY: return new RelayMessage(plain);
+        case MESSAGE_TYPE_RELAYED: return new RelayedMessage(plain);
         default: throw TypeError("Invalid message type " + type);
     }
 }
 
-export function plain(message: string): PlainMessage {
-    return new PlainMessage({ type: MESSAGE_TYPE_PLAIN, content: message });
+export function connected(peerId: string): ConnectedMessage {
+    return new ConnectedMessage({ type: MESSAGE_TYPE_RELAY, peerId: peerId });
 }
 
-export function relay(address: string, message: string): RelayMessage {
-    return new RelayMessage({ type: MESSAGE_TYPE_RELAY, address: address, content: message });
+export function disconnected(peerId: string): DiconnectedMessage {
+    return new DiconnectedMessage({ type: MESSAGE_TYPE_RELAY, peerId: peerId });
 }
 
-export function relayed(address: string, message: string): RelayedMessage {
-    return new RelayedMessage({ type: MESSAGE_TYPE_RELAYED, address: address, content: message });
+export function relay(peerId: string, message: string): RelayMessage {
+    return new RelayMessage({ type: MESSAGE_TYPE_RELAY, peerId: peerId, content: message });
+}
+
+export function relayed(peerId: string, message: string): RelayedMessage {
+    return new RelayedMessage({ type: MESSAGE_TYPE_RELAYED, peerId: peerId, content: message });
 }
 
 // _________________________________________________________________________ //
@@ -50,75 +58,95 @@ export class Message {
     }
 }
 
-export class PlainMessage extends Message {
-    public get content(): string {
-        return this._content;
+export class ConnectedMessage extends Message {
+    public get peerId(): string {
+        return this._peerId;
     }
 
-    private _content: string;
+    private _peerId: string;
 
     constructor(options: any) {
         super(options)
-        this._content = options["content"];
+        this._peerId = options["peerId"];
     }
 
     public getData(): string {
         return JSON.stringify({
             "type": this.type,
-            "content": this.content,
+            "peerId": this._peerId,
+        });
+    }
+}
+
+export class DiconnectedMessage extends Message {
+    public get peerId(): string {
+        return this._peerId;
+    }
+
+    private _peerId: string;
+
+    constructor(options: any) {
+        super(options)
+        this._peerId = options["peerId"];
+    }
+
+    public getData(): string {
+        return JSON.stringify({
+            "type": this.type,
+            "peerId": this._peerId,
         });
     }
 }
 
 export class RelayMessage extends Message {
-    public get address(): string {
-        return this._address;
+    public get peerId(): string {
+        return this._peerId;
     }
 
     public get content(): string {
         return this._content;
     }
 
-    private _address: string;
+    private _peerId: string;
     private _content: string;
 
     constructor(options: any) {
         super(options)
-        this._address = options["address"];
+        this._peerId = options["peerId"];
         this._content = options["content"];
     }
 
     public getData(): string {
         return JSON.stringify({
             "type": this.type,
-            "address": this._address,
+            "peerId": this._peerId,
             "content": this.content,
         });
     }
 }
 
 export class RelayedMessage extends Message {
-    public get address(): string {
-        return this._address;
+    public get peerId(): string {
+        return this._peerId;
     }
 
     public get content(): string {
         return this._content;
     }
 
-    private _address: string;
+    private _peerId: string;
     private _content: string;
 
     constructor(options: any) {
         super(options)
-        this._address = options["address"];
+        this._peerId = options["peerId"];
         this._content = options["content"];
     }
 
     public getData(): string {
         return JSON.stringify({
             "type": this.type,
-            "address": this._address,
+            "peerId": this._peerId,
             "content": this.content,
         });
     }

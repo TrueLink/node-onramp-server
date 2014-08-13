@@ -45,9 +45,9 @@ export class APIImpl implements API {
 export class Server {
     static DEFAULT_PORT: number = 20500;
 
-    public wsServer: websocket.server;
-    public emitter: events.EventEmitter;
-    public peers: connectionManager.ConnectionManager;
+    private wsServer: websocket.server;
+    private emitter: events.EventEmitter;
+    private peers: connectionManager.ConnectionManager;
 
     constructor(wsServer: websocket.server, connectionManager: connectionManager.ConnectionManager) {
         var emitter = this.emitter = new events.EventEmitter();

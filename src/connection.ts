@@ -5,7 +5,8 @@ import protocol = require('./protocol');
 
 export interface API {
     address: string;
-    send(message: string): void;
+    connected(remoteId: string): void;
+    disconnected(remoteId: string): void;
     relay(remoteId: string, message: string): void;
     relayed(remoteId: string, message: string): void;
     on(event: string, listener: Function): events.EventEmitter;
@@ -36,7 +37,8 @@ export class Connection {
     private getApi(): API {
         return {
             address: this.address,
-            send: this.send.bind(this),
+            connected: this.connected.bind(this),
+            disconnected: this.disconnected.bind(this),
             relay: this.relay.bind(this),
             relayed: this.relayed.bind(this),
             on: this.emitter.on.bind(this.emitter),
@@ -51,12 +53,9 @@ export class Connection {
             var message = protocol.parse(JSON.parse(raw.utf8Data));
 
             switch (message.type) {
-                case protocol.MESSAGE_TYPE_PLAIN:
-                    this.emitter.emit('message', (<protocol.PlainMessage>message).content);
-                    break;
                 case protocol.MESSAGE_TYPE_RELAY:
                     this.relayHandler(
-                        (<protocol.RelayMessage>message).address,
+                        (<protocol.RelayMessage>message).peerId,
                         (<protocol.RelayMessage>message).content
                         );
                     break;
@@ -80,8 +79,12 @@ export class Connection {
         peer.relayed(this.address, message);
     }
 
-    public send(message: string) {
-        this.sendProtocolMessage(protocol.plain(message));
+    public connected(remoteId: string) {
+        this.sendProtocolMessage(protocol.connected(remoteId));
+    }
+
+    public disconnected(remoteId: string) {
+        this.sendProtocolMessage(protocol.disconnected(remoteId));
     }
 
     private relay(remoteId: string, message: string) {

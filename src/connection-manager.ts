@@ -4,8 +4,8 @@ function noop(connection: connection.API): void {
 }
 
 export class ConnectionManager {
-    public connectionMap: { [address: string]: connection.API; } = {};
-    public connectionList: Array<connection.API> = [];
+    private connectionMap: { [address: string]: connection.API; } = {};
+    private connectionList: Array<connection.API> = [];
 
     public onAdd: (connection: connection.API) => void = noop;
     public onRemove: (connection: connection.API) => void = noop;

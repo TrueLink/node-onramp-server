@@ -13,11 +13,16 @@ var host = (<any>app)["host"];
 var onramp = server.Server.create({host: host});
 
 onramp.on('connection', function(conn: connection.API) {
-    console.log('new connection: ' + conn.address);
+    console.log('peer connected: ' + conn.address);
     onramp.connections.forEach(function(other){
-        if (other === conn) return;
-            
-        conn.send(other.address);
-        other.send(conn.address);
+        conn.connected(other.address);
+        other.connected(conn.address);
+    });
+});
+
+onramp.on('disconnection', function (conn: connection.API) {
+    console.log('peer disconnected: ' + conn.address);
+    onramp.connections.forEach(function (other) {
+        other.disconnected(conn.address);
     });
 });

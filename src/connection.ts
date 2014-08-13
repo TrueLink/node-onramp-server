@@ -80,7 +80,7 @@ export class Connection {
         peer.relayed(this.address, message);
     }
 
-    private send(message: string) {
+    public send(message: string) {
         this.sendProtocolMessage(protocol.plain(message));
     }
 

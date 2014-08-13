@@ -7,7 +7,42 @@ import connectionManager = require("./connection-manager");
 import connection = require("./connection");
 import protocol = require("./protocol");
 
-class Server {
+export interface API {
+    on(event: string, listener: Function): events.EventEmitter;
+    removeListener(event: string, listener: Function): events.EventEmitter;
+    connections: connection.API[];
+}
+
+export class APIImpl implements API {
+    private _on: (event: string, listener: Function) => events.EventEmitter;
+    private _removeListener: (event: string, listener: Function) => events.EventEmitter;
+    private _manager: connectionManager.ConnectionManager;
+
+    constructor(options: {
+        on: (event: string, listener: Function) => events.EventEmitter;
+        removeListener: (event: string, listener: Function) => events.EventEmitter;
+        manager: connectionManager.ConnectionManager;
+    }) {
+        this._on = options.on;
+        this._removeListener = options.removeListener;
+        this._manager = options.manager;
+    }
+
+    on(event: string, listener: Function): events.EventEmitter {
+        return this._on(event, listener);
+    }
+
+    removeListener(event: string, listener: Function): events.EventEmitter {
+        return this._removeListener(event, listener);
+    }
+
+    get connections(): connection.API[]{
+        return this._manager.get();
+    }
+}
+
+
+export class Server {
     static DEFAULT_PORT: number = 20500;
 
     public wsServer: websocket.server;
@@ -65,9 +100,9 @@ class Server {
             });
         }
 
-        var connectionManager = new connectionManager.ConnectionManager();
+        var manager = new connectionManager.ConnectionManager();
 
-        var server = new Server(options.wsServer, connectionManager);
+        var server = new Server(options.wsServer, manager);
         return server.getApi();
     }
 
@@ -83,17 +118,12 @@ class Server {
         });
     }
 
-    private getApi() {
-        var api = {
+    private getApi(): API {
+        return new APIImpl({
             on: this.emitter.on.bind(this.emitter),
-            removeListener: this.emitter.removeListener.bind(this.emitter)
-        };
-
-        Object.defineProperty(api, 'connections', {
-            get: this.peers.get.bind(this.peers)
+            removeListener: this.emitter.removeListener.bind(this.emitter),
+            manager: this.peers,
         });
-
-        return api;
     }
 }
 

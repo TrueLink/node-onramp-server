@@ -3,8 +3,34 @@ var uuid = require('node-uuid');
 var events = require('events');
 var websocket = require('websocket');
 
+var connectionManager = require("./connection-manager");
 var connection = require("./connection");
 var protocol = require("./protocol");
+
+var APIImpl = (function () {
+    function APIImpl(options) {
+        this._on = options.on;
+        this._removeListener = options.removeListener;
+        this._manager = options.manager;
+    }
+    APIImpl.prototype.on = function (event, listener) {
+        return this._on(event, listener);
+    };
+
+    APIImpl.prototype.removeListener = function (event, listener) {
+        return this._removeListener(event, listener);
+    };
+
+    Object.defineProperty(APIImpl.prototype, "connections", {
+        get: function () {
+            return this._manager.get();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return APIImpl;
+})();
+exports.APIImpl = APIImpl;
 
 var Server = (function () {
     function Server(wsServer, connectionManager) {
@@ -53,9 +79,9 @@ var Server = (function () {
             });
         }
 
-        var connectionManager = new connectionManager.ConnectionManager();
+        var manager = new connectionManager.ConnectionManager();
 
-        var server = new Server(options.wsServer, connectionManager);
+        var server = new Server(options.wsServer, manager);
         return server.getApi();
     };
 
@@ -72,18 +98,14 @@ var Server = (function () {
     };
 
     Server.prototype.getApi = function () {
-        var api = {
+        return new APIImpl({
             on: this.emitter.on.bind(this.emitter),
-            removeListener: this.emitter.removeListener.bind(this.emitter)
-        };
-
-        Object.defineProperty(api, 'connections', {
-            get: this.peers.get.bind(this.peers)
+            removeListener: this.emitter.removeListener.bind(this.emitter),
+            manager: this.peers
         });
-
-        return api;
     };
     Server.DEFAULT_PORT = 20500;
     return Server;
 })();
+exports.Server = Server;
 //# sourceMappingURL=server.js.map

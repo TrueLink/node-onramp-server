@@ -2,5 +2,5 @@
 
 Relay server build with websocket and nodejs
 
-Original idea was borrowed from https://github.com/oztu/onramp.
-
+Idea was borrowed from https://github.com/oztu/onramp.
+See http://ozan.io/p for original KISS example.

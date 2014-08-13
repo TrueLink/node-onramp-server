@@ -8,6 +8,7 @@
     "email": ""
   },
   "dependencies": {
+    "commander": "^2.3.0",
     "node-uuid": "^1.4.1",
     "websocket": "^1.0.8"
   }

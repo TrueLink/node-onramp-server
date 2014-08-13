@@ -36,8 +36,10 @@
   <ItemGroup>
     <TypeScriptCompile Include="src\connection-manager.ts" />
     <TypeScriptCompile Include="src\connection.ts" />
+    <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src\protocol.ts" />
     <TypeScriptCompile Include="src\server.ts" />
+    <TypeScriptCompile Include="typings\commander\commander.d.ts" />
     <TypeScriptCompile Include="typings\node-uuid\node-uuid.d.ts" />
     <TypeScriptCompile Include="typings\node\node.d.ts" />
     <Content Include="package.json" />
@@ -48,6 +50,7 @@
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="typings\" />
+    <Folder Include="typings\commander\" />
     <Folder Include="typings\node-uuid\" />
     <Folder Include="typings\node\" />
     <Folder Include="typings\websocket\" />

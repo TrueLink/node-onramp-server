@@ -3,9 +3,6 @@ import websocket = require('websocket');
 import connectionManager = require("./connection-manager");
 import protocol = require('./protocol');
 
-var MESSAGE_TYPE = protocol.MESSAGE_TYPE;
-var PROTOCOL_NAME = protocol.NAME;
-
 export interface API {
     address: string;
     send(message: string): void;
@@ -47,28 +44,20 @@ export class Connection {
         };
     }
 
-    private send(message) {
-        if (message instanceof ArrayBuffer) {
-            this.connection.sendBinary(message);
-        } else {
-            this.sendProtocolMessage([MESSAGE_TYPE.PLAIN, message]);
-        }
-    }
+    private messageHandler(raw: websocket.IMessage) {
+        console.log('message', raw);
 
-    private messageHandler(message) {
-        console.log('message', message);
+        if (raw.type === "utf8") {
+            var message = protocol.parse(JSON.parse(raw.utf8Data));
 
-        if (message.type === "utf8") {
-            message = JSON.parse(message.utf8Data);
-
-            switch (message[0]) {
-                case MESSAGE_TYPE.PLAIN:
-                    this.emitter.emit('message', message[1]);
+            switch (message.type) {
+                case protocol.MESSAGE_TYPE_PLAIN:
+                    this.emitter.emit('message', (<protocol.PlainMessage>message).content);
                     break;
-                case MESSAGE_TYPE.RELAY:
+                case protocol.MESSAGE_TYPE_RELAY:
                     this.relayHandler(
-                        message[1], // detinationId
-                        message[2]  // message
+                        (<protocol.RelayMessage>message).address,
+                        (<protocol.RelayMessage>message).content
                         );
                     break;
             }
@@ -79,8 +68,8 @@ export class Connection {
         this.emitter.emit('close');
     }
 
-    private sendProtocolMessage(message) {
-        var stringified = JSON.stringify(message);
+    private sendProtocolMessage(message: protocol.Message) {
+        var stringified = JSON.stringify(message.getData);
         this.connection.sendUTF(stringified);
     }
 
@@ -91,12 +80,16 @@ export class Connection {
         peer.relayed(this.address, message);
     }
 
+    private send(message: string) {
+        this.sendProtocolMessage(protocol.plain(message));
+    }
+
     private relay(remoteId: string, message: string) {
-        this.sendProtocolMessage([MESSAGE_TYPE.RELAY, remoteId, message]);
+        this.sendProtocolMessage(protocol.relay(remoteId, message));
     }
 
     private relayed(remoteId: string, message: string) {
-        this.sendProtocolMessage([MESSAGE_TYPE.RELAYED, remoteId, message]);
+        this.sendProtocolMessage(protocol.relayed(remoteId, message));
     }
 }
 

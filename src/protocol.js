@@ -6,34 +6,49 @@
 };
 exports.name = "rampage";
 
-var MESSAGE_TYPE_PLAIN = 0;
+exports.MESSAGE_TYPE_PLAIN = 0;
 
-var MESSAGE_TYPE_RELAY = 10;
-var MESSAGE_TYPE_RELAYED = 11;
+exports.MESSAGE_TYPE_RELAY = 10;
+exports.MESSAGE_TYPE_RELAYED = 11;
 
-var MESSAGE_TYPE_RTC_OFFER = 20;
-var MESSAGE_TYPE_RTC_ANSWER = 21;
-var MESSAGE_TYPE_RTC_ICE_CANDIDATE = 22;
+exports.MESSAGE_TYPE_RTC_OFFER = 20;
+exports.MESSAGE_TYPE_RTC_ANSWER = 21;
+exports.MESSAGE_TYPE_RTC_ICE_CANDIDATE = 22;
 
 function parse(plain) {
-    return null;
+    var type = plain["type"];
+    switch (type) {
+        case exports.MESSAGE_TYPE_PLAIN:
+            return new PlainMessage(plain);
+        case exports.MESSAGE_TYPE_PLAIN:
+            return new PlainMessage(plain);
+        case exports.MESSAGE_TYPE_PLAIN:
+            return new PlainMessage(plain);
+        default:
+            throw TypeError("Invalid message type " + type);
+    }
 }
 exports.parse = parse;
 
-function plain(text) {
-    return new PlainMessage(MESSAGE_TYPE_PLAIN, text);
+function plain(message) {
+    return new PlainMessage({ type: exports.MESSAGE_TYPE_PLAIN, content: message });
 }
 exports.plain = plain;
 
-function plain(text) {
-    return new PlainMessage(MESSAGE_TYPE_PLAIN, text);
+function relay(address, message) {
+    return new RelayMessage({ type: exports.MESSAGE_TYPE_RELAY, address: address, content: message });
 }
-exports.plain = plain;
+exports.relay = relay;
+
+function relayed(address, message) {
+    return new RelayedMessage({ type: exports.MESSAGE_TYPE_RELAYED, address: address, content: message });
+}
+exports.relayed = relayed;
 
 // _________________________________________________________________________ //
 var Message = (function () {
-    function Message(type) {
-        this._type = type;
+    function Message(options) {
+        this._type = options["type"];
     }
     Object.defineProperty(Message.prototype, "type", {
         get: function () {
@@ -56,13 +71,13 @@ exports.Message = Message;
 
 var PlainMessage = (function (_super) {
     __extends(PlainMessage, _super);
-    function PlainMessage(type, text) {
-        _super.call(this, type);
-        this._text = text;
+    function PlainMessage(options) {
+        _super.call(this, options);
+        this._content = options["content"];
     }
-    Object.defineProperty(PlainMessage.prototype, "text", {
+    Object.defineProperty(PlainMessage.prototype, "content", {
         get: function () {
-            return this._text;
+            return this._content;
         },
         enumerable: true,
         configurable: true
@@ -71,11 +86,81 @@ var PlainMessage = (function (_super) {
     PlainMessage.prototype.getData = function () {
         var data = _super.prototype.getData.call(this);
 
-        data["text"] = this._text;
+        data["content"] = this._content;
 
         return data;
     };
     return PlainMessage;
 })(Message);
 exports.PlainMessage = PlainMessage;
+
+var RelayMessage = (function (_super) {
+    __extends(RelayMessage, _super);
+    function RelayMessage(options) {
+        _super.call(this, options);
+        this._address = options["address"];
+        this._content = options["content"];
+    }
+    Object.defineProperty(RelayMessage.prototype, "address", {
+        get: function () {
+            return this._address;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(RelayMessage.prototype, "content", {
+        get: function () {
+            return this._content;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    RelayMessage.prototype.getData = function () {
+        var data = _super.prototype.getData.call(this);
+
+        data["address"] = this._address;
+        data["content"] = this._content;
+
+        return data;
+    };
+    return RelayMessage;
+})(Message);
+exports.RelayMessage = RelayMessage;
+
+var RelayedMessage = (function (_super) {
+    __extends(RelayedMessage, _super);
+    function RelayedMessage(options) {
+        _super.call(this, options);
+        this._address = options["address"];
+        this._content = options["content"];
+    }
+    Object.defineProperty(RelayedMessage.prototype, "address", {
+        get: function () {
+            return this._address;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(RelayedMessage.prototype, "content", {
+        get: function () {
+            return this._content;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    RelayedMessage.prototype.getData = function () {
+        var data = _super.prototype.getData.call(this);
+
+        data["address"] = this._address;
+        data["content"] = this._content;
+
+        return data;
+    };
+    return RelayedMessage;
+})(Message);
+exports.RelayedMessage = RelayedMessage;
 //# sourceMappingURL=protocol.js.map

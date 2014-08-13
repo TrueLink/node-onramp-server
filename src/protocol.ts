@@ -1,24 +1,35 @@
 ﻿export var name: string = "rampage";
 
-var MESSAGE_TYPE_PLAIN = 0;
+export var MESSAGE_TYPE_PLAIN = 0;
 
-var MESSAGE_TYPE_RELAY = 10;
-var MESSAGE_TYPE_RELAYED = 11;
+export var MESSAGE_TYPE_RELAY = 10;
+export var MESSAGE_TYPE_RELAYED = 11;
 
-var MESSAGE_TYPE_RTC_OFFER = 20;
-var MESSAGE_TYPE_RTC_ANSWER = 21;
-var MESSAGE_TYPE_RTC_ICE_CANDIDATE = 22;
+export var MESSAGE_TYPE_RTC_OFFER = 20;
+export var MESSAGE_TYPE_RTC_ANSWER = 21;
+export var MESSAGE_TYPE_RTC_ICE_CANDIDATE = 22;
+
 
 export function parse(plain: Object): Message {
-    return null;
+    var type = plain["type"];
+    switch (type) {
+        case MESSAGE_TYPE_PLAIN: return new PlainMessage(plain);
+        case MESSAGE_TYPE_PLAIN: return new PlainMessage(plain);
+        case MESSAGE_TYPE_PLAIN: return new PlainMessage(plain);
+        default: throw TypeError("Invalid message type " + type);
+    }
 }
 
-export function plain(text: string): PlainMessage {
-    return new PlainMessage(MESSAGE_TYPE_PLAIN, text);
+export function plain(message: string): PlainMessage {
+    return new PlainMessage({ type: MESSAGE_TYPE_PLAIN, content: message });
 }
 
-export function plain(text: string): PlainMessage {
-    return new PlainMessage(MESSAGE_TYPE_PLAIN, text);
+export function relay(address: string, message: string): RelayMessage {
+    return new RelayMessage({ type: MESSAGE_TYPE_RELAY, address: address, content: message });
+}
+
+export function relayed(address: string, message: string): RelayedMessage {
+    return new RelayedMessage({ type: MESSAGE_TYPE_RELAYED, address: address, content: message });
 }
 
 // _________________________________________________________________________ //
@@ -30,8 +41,8 @@ export class Message {
 
     private _type: number;
 
-    constructor(type: number) {
-        this._type = type;
+    constructor(options: Object) {
+        this._type = options["type"];
     }
 
     public getData(): Object {
@@ -44,21 +55,77 @@ export class Message {
 }
 
 export class PlainMessage extends Message {
-    public get text(): string {
-        return this._text;
+    public get content(): string {
+        return this._content;
     }
 
-    private _text: string;
+    private _content: string;
 
-    constructor(type: number, text: string) {
-        super(type)
-        this._text = text;
+    constructor(options: Object) {
+        super(options)
+        this._content = options["content"];
     }
 
     public getData(): Object {
         var data = super.getData();
 
-        data["text"] = this._text;
+        data["content"] = this._content;
+
+        return data;
+    }
+}
+
+export class RelayMessage extends Message {
+    public get address(): string {
+        return this._address;
+    }
+
+    public get content(): string {
+        return this._content;
+    }
+
+    private _address: string;
+    private _content: string;
+
+    constructor(options: Object) {
+        super(options)
+        this._address = options["address"];
+        this._content = options["content"];
+    }
+
+    public getData(): Object {
+        var data = super.getData();
+
+        data["address"] = this._address;
+        data["content"] = this._content;
+
+        return data;
+    }
+}
+
+export class RelayedMessage extends Message {
+    public get address(): string {
+        return this._address;
+    }
+
+    public get content(): string {
+        return this._content;
+    }
+
+    private _address: string;
+    private _content: string;
+
+    constructor(options: Object) {
+        super(options)
+        this._address = options["address"];
+        this._content = options["content"];
+    }
+
+    public getData(): Object {
+        var data = super.getData();
+
+        data["address"] = this._address;
+        data["content"] = this._content;
 
         return data;
     }

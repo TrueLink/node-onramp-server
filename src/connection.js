@@ -2,9 +2,6 @@
 
 var protocol = require('./protocol');
 
-var MESSAGE_TYPE = protocol.MESSAGE_TYPE;
-var PROTOCOL_NAME = protocol.NAME;
-
 var Connection = (function () {
     function Connection(address, peers, connection) {
         this.address = address;
@@ -31,26 +28,18 @@ var Connection = (function () {
         };
     };
 
-    Connection.prototype.send = function (message) {
-        if (message instanceof ArrayBuffer) {
-            this.connection.sendBinary(message);
-        } else {
-            this.sendProtocolMessage([MESSAGE_TYPE.PLAIN, message]);
-        }
-    };
+    Connection.prototype.messageHandler = function (raw) {
+        console.log('message', raw);
 
-    Connection.prototype.messageHandler = function (message) {
-        console.log('message', message);
+        if (raw.type === "utf8") {
+            var message = protocol.parse(JSON.parse(raw.utf8Data));
 
-        if (message.type === "utf8") {
-            message = JSON.parse(message.utf8Data);
-
-            switch (message[0]) {
-                case MESSAGE_TYPE.PLAIN:
-                    this.emitter.emit('message', message[1]);
+            switch (message.type) {
+                case protocol.MESSAGE_TYPE_PLAIN:
+                    this.emitter.emit('message', message.content);
                     break;
-                case MESSAGE_TYPE.RELAY:
-                    this.relayHandler(message[1], message[2]);
+                case protocol.MESSAGE_TYPE_RELAY:
+                    this.relayHandler(message.address, message.content);
                     break;
             }
         }
@@ -61,7 +50,7 @@ var Connection = (function () {
     };
 
     Connection.prototype.sendProtocolMessage = function (message) {
-        var stringified = JSON.stringify(message);
+        var stringified = JSON.stringify(message.getData);
         this.connection.sendUTF(stringified);
     };
 
@@ -73,12 +62,16 @@ var Connection = (function () {
         peer.relayed(this.address, message);
     };
 
+    Connection.prototype.send = function (message) {
+        this.sendProtocolMessage(protocol.plain(message));
+    };
+
     Connection.prototype.relay = function (remoteId, message) {
-        this.sendProtocolMessage([MESSAGE_TYPE.RELAY, remoteId, message]);
+        this.sendProtocolMessage(protocol.relay(remoteId, message));
     };
 
     Connection.prototype.relayed = function (remoteId, message) {
-        this.sendProtocolMessage([MESSAGE_TYPE.RELAYED, remoteId, message]);
+        this.sendProtocolMessage(protocol.relayed(remoteId, message));
     };
     return Connection;
 })();

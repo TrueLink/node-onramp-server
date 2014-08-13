@@ -1,3 +1,5 @@
 .ntvs_analysis.dat
 obj/
 node_modules/
+src/**/*.js
+src/**/*.map

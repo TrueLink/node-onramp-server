@@ -10,11 +10,11 @@ app.parse(process.argv);
 
 var host = (<any>app)["host"];
 
-var onramp = server.Server.create({host: host});
+var onramp = server.Server.create({ host: host });
 
-onramp.on('connection', function(conn: connection.API) {
+onramp.on('connection', function (conn: connection.API) {
     console.log('peer connected: ' + conn.address);
-    onramp.connections.forEach(function(other){
+    onramp.connections.forEach(function (other) {
         conn.connected(other.address);
         other.connected(conn.address);
     });

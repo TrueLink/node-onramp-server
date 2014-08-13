@@ -1,5 +1,5 @@
-﻿var app = require('commander');
-var server = require('./server');
+﻿var app = require("commander");
+var server = require("./server");
 
 app.version('0.2.0');
 
@@ -11,14 +11,14 @@ var host = app["host"];
 
 var onramp = server.Server.create({ host: host });
 
-onramp.on('connection', function (connection) {
-    console.log('new connection: ' + connection.address);
+onramp.on('connection', function (conn) {
+    console.log('new connection: ' + conn.address);
     onramp.connections.forEach(function (other) {
-        if (other === connection)
+        if (other === conn)
             return;
 
-        connection.send(other.address);
-        other.send(connection.address);
+        conn.send(other.address);
+        other.send(conn.address);
     });
 });
 //# sourceMappingURL=index.js.map

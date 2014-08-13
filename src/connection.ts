@@ -28,7 +28,7 @@ export class Connection {
         connection.on('close', this.closeHandler.bind(this));
     }
 
-    static create(address: string, peers, raw): API {
+    static create(address: string, peers: connectionManager.ConnectionManager, raw: websocket.connection): API {
         var intance = new Connection(address, peers, raw);
         return intance.getApi();
     }
@@ -73,7 +73,7 @@ export class Connection {
         this.connection.sendUTF(stringified);
     }
 
-    private relayHandler(destination: string, message) {
+    private relayHandler(destination: string, message: string) {
         var peer = this.peers.get(destination);
         if (!peer) return;
 

@@ -59,11 +59,7 @@ var Message = (function () {
     });
 
     Message.prototype.getData = function () {
-        var data = {};
-
-        data["type"] = this._type;
-
-        return data;
+        throw new TypeError("Abstract method");
     };
     return Message;
 })();
@@ -84,11 +80,10 @@ var PlainMessage = (function (_super) {
     });
 
     PlainMessage.prototype.getData = function () {
-        var data = _super.prototype.getData.call(this);
-
-        data["content"] = this._content;
-
-        return data;
+        return JSON.stringify({
+            "type": this.type,
+            "content": this.content
+        });
     };
     return PlainMessage;
 })(Message);
@@ -118,12 +113,11 @@ var RelayMessage = (function (_super) {
     });
 
     RelayMessage.prototype.getData = function () {
-        var data = _super.prototype.getData.call(this);
-
-        data["address"] = this._address;
-        data["content"] = this._content;
-
-        return data;
+        return JSON.stringify({
+            "type": this.type,
+            "address": this._address,
+            "content": this.content
+        });
     };
     return RelayMessage;
 })(Message);
@@ -153,12 +147,11 @@ var RelayedMessage = (function (_super) {
     });
 
     RelayedMessage.prototype.getData = function () {
-        var data = _super.prototype.getData.call(this);
-
-        data["address"] = this._address;
-        data["content"] = this._content;
-
-        return data;
+        return JSON.stringify({
+            "type": this.type,
+            "address": this._address,
+            "content": this.content
+        });
     };
     return RelayedMessage;
 })(Message);

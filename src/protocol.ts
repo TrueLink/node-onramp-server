@@ -10,7 +10,7 @@ export var MESSAGE_TYPE_RTC_ANSWER = 21;
 export var MESSAGE_TYPE_RTC_ICE_CANDIDATE = 22;
 
 
-export function parse(plain: Object): Message {
+export function parse(plain: any): Message {
     var type = plain["type"];
     switch (type) {
         case MESSAGE_TYPE_PLAIN: return new PlainMessage(plain);
@@ -41,16 +41,12 @@ export class Message {
 
     private _type: number;
 
-    constructor(options: Object) {
+    constructor(options: any) {
         this._type = options["type"];
     }
 
-    public getData(): Object {
-        var data = {};
-
-        data["type"] = this._type;
-
-        return data;
+    public getData(): string {
+        throw new TypeError("Abstract method");
     }
 }
 
@@ -61,17 +57,16 @@ export class PlainMessage extends Message {
 
     private _content: string;
 
-    constructor(options: Object) {
+    constructor(options: any) {
         super(options)
         this._content = options["content"];
     }
 
-    public getData(): Object {
-        var data = super.getData();
-
-        data["content"] = this._content;
-
-        return data;
+    public getData(): string {
+        return JSON.stringify({
+            "type": this.type,
+            "content": this.content,
+        });
     }
 }
 
@@ -87,19 +82,18 @@ export class RelayMessage extends Message {
     private _address: string;
     private _content: string;
 
-    constructor(options: Object) {
+    constructor(options: any) {
         super(options)
         this._address = options["address"];
         this._content = options["content"];
     }
 
-    public getData(): Object {
-        var data = super.getData();
-
-        data["address"] = this._address;
-        data["content"] = this._content;
-
-        return data;
+    public getData(): string {
+        return JSON.stringify({
+            "type": this.type,
+            "address": this._address,
+            "content": this.content,
+        });
     }
 }
 
@@ -115,18 +109,17 @@ export class RelayedMessage extends Message {
     private _address: string;
     private _content: string;
 
-    constructor(options: Object) {
+    constructor(options: any) {
         super(options)
         this._address = options["address"];
         this._content = options["content"];
     }
 
-    public getData(): Object {
-        var data = super.getData();
-
-        data["address"] = this._address;
-        data["content"] = this._content;
-
-        return data;
+    public getData(): string {
+        return JSON.stringify({
+            "type": this.type,
+            "address": this._address,
+            "content": this.content,
+        });
     }
 }

@@ -55,7 +55,7 @@ export class Connection {
             switch (message.type) {
                 case protocol.MESSAGE_TYPE_RELAY:
                     this.relayHandler(
-                        (<protocol.RelayMessage>message).peerId,
+                        (<protocol.RelayMessage>message).address,
                         (<protocol.RelayMessage>message).content
                         );
                     break;

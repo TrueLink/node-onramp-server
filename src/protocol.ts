@@ -24,20 +24,20 @@ export function parse(plain: any): Message {
     }
 }
 
-export function connected(peerId: string): ConnectedMessage {
-    return new ConnectedMessage({ type: MESSAGE_TYPE_RELAY, peerId: peerId });
+export function connected(address: string): ConnectedMessage {
+    return new ConnectedMessage({ type: MESSAGE_TYPE_RELAY, address: address });
 }
 
-export function disconnected(peerId: string): DiconnectedMessage {
-    return new DiconnectedMessage({ type: MESSAGE_TYPE_RELAY, peerId: peerId });
+export function disconnected(address: string): DiconnectedMessage {
+    return new DiconnectedMessage({ type: MESSAGE_TYPE_RELAY, address: address });
 }
 
-export function relay(peerId: string, message: string): RelayMessage {
-    return new RelayMessage({ type: MESSAGE_TYPE_RELAY, peerId: peerId, content: message });
+export function relay(address: string, message: string): RelayMessage {
+    return new RelayMessage({ type: MESSAGE_TYPE_RELAY, address: address, content: message });
 }
 
-export function relayed(peerId: string, message: string): RelayedMessage {
-    return new RelayedMessage({ type: MESSAGE_TYPE_RELAYED, peerId: peerId, content: message });
+export function relayed(address: string, message: string): RelayedMessage {
+    return new RelayedMessage({ type: MESSAGE_TYPE_RELAYED, address: address, content: message });
 }
 
 // _________________________________________________________________________ //
@@ -59,94 +59,94 @@ export class Message {
 }
 
 export class ConnectedMessage extends Message {
-    public get peerId(): string {
-        return this._peerId;
+    public get address(): string {
+        return this._address;
     }
 
-    private _peerId: string;
+    private _address: string;
 
     constructor(options: any) {
         super(options)
-        this._peerId = options["peerId"];
+        this._address = options["address"];
     }
 
     public getData(): string {
         return JSON.stringify({
             "type": this.type,
-            "peerId": this._peerId,
+            "address": this._address,
         });
     }
 }
 
 export class DiconnectedMessage extends Message {
-    public get peerId(): string {
-        return this._peerId;
+    public get address(): string {
+        return this._address;
     }
 
-    private _peerId: string;
+    private _address: string;
 
     constructor(options: any) {
         super(options)
-        this._peerId = options["peerId"];
+        this._address = options["address"];
     }
 
     public getData(): string {
         return JSON.stringify({
             "type": this.type,
-            "peerId": this._peerId,
+            "address": this._address,
         });
     }
 }
 
 export class RelayMessage extends Message {
-    public get peerId(): string {
-        return this._peerId;
+    public get address(): string {
+        return this._address;
     }
 
     public get content(): string {
         return this._content;
     }
 
-    private _peerId: string;
+    private _address: string;
     private _content: string;
 
     constructor(options: any) {
         super(options)
-        this._peerId = options["peerId"];
+        this._address = options["address"];
         this._content = options["content"];
     }
 
     public getData(): string {
         return JSON.stringify({
             "type": this.type,
-            "peerId": this._peerId,
+            "address": this._address,
             "content": this.content,
         });
     }
 }
 
 export class RelayedMessage extends Message {
-    public get peerId(): string {
-        return this._peerId;
+    public get address(): string {
+        return this._address;
     }
 
     public get content(): string {
         return this._content;
     }
 
-    private _peerId: string;
+    private _address: string;
     private _content: string;
 
     constructor(options: any) {
         super(options)
-        this._peerId = options["peerId"];
+        this._address = options["address"];
         this._content = options["content"];
     }
 
     public getData(): string {
         return JSON.stringify({
             "type": this.type,
-            "peerId": this._peerId,
+            "address": this._address,
             "content": this.content,
         });
     }

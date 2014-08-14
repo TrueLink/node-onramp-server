@@ -36,7 +36,7 @@ export class APIImpl implements API {
         return this._removeListener(event, listener);
     }
 
-    get connections(): connection.API[]{
+    get connections(): connection.API[] {
         return this._manager.get();
     }
 }

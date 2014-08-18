@@ -5,10 +5,9 @@ import protocol = require('./protocol');
 
 export interface API {
     address: string;
-    //connected(remoteId: string): void;
-    //disconnected(remoteId: string): void;
-    //relay(remoteId: string, message: string): void;
-    //relayed(remoteId: string, message: string): void;
+    connected(remoteId: string): void;
+    disconnected(remoteId: string): void;
+    relayed(remoteId: string, message: string): void;
     on(event: string, listener: Function): events.EventEmitter;
     removeListener(event: string, listener: Function): events.EventEmitter;
 }
@@ -38,16 +37,15 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     private getApi(): API {
         return {
             address: this.address,
-            //connected: this.connected.bind(this),
-            //disconnected: this.disconnected.bind(this),
-            //relay: this.relay.bind(this),
-            //relayed: this.relayed.bind(this),
+            connected: this.writeConnected.bind(this),
+            disconnected: this.writeDisconnected.bind(this),
+            relayed: this.writeRelayed.bind(this),
             on: this.emitter.on.bind(this.emitter),
             removeListener: this.emitter.removeListener.bind(this.emitter)
         };
     }
 
-    private messageHandler(raw: websocket.IMessage) {
+    private messageHandler(raw: websocket.IMessage): void {
         console.log('message', raw);
 
         if (raw.type === "utf8") {
@@ -56,29 +54,40 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         }
     }
 
-    private closeHandler() {
+    private closeHandler(): void {
         this.emitter.emit('close');
     }
 
-    public writeMessage(message: any) {
+    public writeMessage(message: any): void {
         var stringified = JSON.stringify(message.getData());
         this.connection.sendUTF(stringified);
     }
 
-    public readPeerConnectedMessage(destination: string) {
+    public readPeerConnectedMessage(destination: string): void {
+        throw new Error("onramp server have nothing to do with connectivity map");
     }
 
-    public readPeerDisconnectedMessage(destination: string) {
+    public readPeerDisconnectedMessage(destination: string): void {
+        throw new Error("onramp server have nothing to do with connectivity map");
     }
 
-    public readRelayMessage(destination: string, message: any) {
+    /**
+     * Received message that has to be sent to another destination.
+     *
+     * @param {string} destination Destination for the message.
+     * @param {any} message        The message.
+     */
+    public readRelayMessage(destination: string, message: any): void {
+
         var peer = this.peers.get(destination);
         if (!peer) return;
 
-        //peer.relay(this.address, message);
+        // sending message to destination
+        peer.relayed(this.address, message);
     }
 
-    public readRelayedMessage(destination: string, message: any) {
+    public readRelayedMessage(destination: string, message: any): void {
+        throw new Error("onramp server can't receive messages");
     }
 }
 

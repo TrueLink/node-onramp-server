@@ -109,7 +109,10 @@ export class Server {
     private connectionHandler(request: websocket.request) {
         var address = uuid.v4();
         var peers = this.peers;
-        var peer = connection.Connection.create(address, this.peers, request.accept(protocol.name, request.origin));
+
+        var wsConn = request.accept(protocol.name, request.origin);
+
+        var peer = connection.Connection.create(address, this.peers, wsConn);
 
         peers.add(peer);
 

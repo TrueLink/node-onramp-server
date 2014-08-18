@@ -5,21 +5,22 @@ import protocol = require('./protocol');
 
 export interface API {
     address: string;
-    connected(remoteId: string): void;
-    disconnected(remoteId: string): void;
-    relay(remoteId: string, message: string): void;
-    relayed(remoteId: string, message: string): void;
+    //connected(remoteId: string): void;
+    //disconnected(remoteId: string): void;
+    //relay(remoteId: string, message: string): void;
+    //relayed(remoteId: string, message: string): void;
     on(event: string, listener: Function): events.EventEmitter;
     removeListener(event: string, listener: Function): events.EventEmitter;
 }
 
-export class Connection {
-    public address: string;
-    private emitter: events.EventEmitter;
+export class Connection extends protocol.Protocol implements protocol.Callbacks {
+    private address: string;
     private peers: connectionManager.ConnectionManager;
     private connection: websocket.connection;
+    private emitter: events.EventEmitter;
 
     constructor(address: string, peers: connectionManager.ConnectionManager, connection: websocket.connection) {
+        super(this);
         this.address = address;
         this.peers = peers;
         this.connection = connection;
@@ -37,10 +38,10 @@ export class Connection {
     private getApi(): API {
         return {
             address: this.address,
-            connected: this.connected.bind(this),
-            disconnected: this.disconnected.bind(this),
-            relay: this.relay.bind(this),
-            relayed: this.relayed.bind(this),
+            //connected: this.connected.bind(this),
+            //disconnected: this.disconnected.bind(this),
+            //relay: this.relay.bind(this),
+            //relayed: this.relayed.bind(this),
             on: this.emitter.on.bind(this.emitter),
             removeListener: this.emitter.removeListener.bind(this.emitter)
         };
@@ -50,16 +51,8 @@ export class Connection {
         console.log('message', raw);
 
         if (raw.type === "utf8") {
-            var message = protocol.parse(JSON.parse(raw.utf8Data));
-
-            switch (message.type) {
-                case protocol.MESSAGE_TYPE_RELAY:
-                    this.relayHandler(
-                        (<protocol.RelayMessage>message).address,
-                        (<protocol.RelayMessage>message).content
-                        );
-                    break;
-            }
+            var message = JSON.parse(raw.utf8Data);
+            this.readMessage(message);
         }
     }
 
@@ -67,32 +60,25 @@ export class Connection {
         this.emitter.emit('close');
     }
 
-    private sendProtocolMessage(message: protocol.Message) {
-        var stringified = JSON.stringify(message.getData);
+    public writeMessage(message: any) {
+        var stringified = JSON.stringify(message.getData());
         this.connection.sendUTF(stringified);
     }
 
-    private relayHandler(destination: string, message: string) {
+    public readPeerConnectedMessage(destination: string) {
+    }
+
+    public readPeerDisconnectedMessage(destination: string) {
+    }
+
+    public readRelayMessage(destination: string, message: any) {
         var peer = this.peers.get(destination);
         if (!peer) return;
 
-        peer.relayed(this.address, message);
+        //peer.relay(this.address, message);
     }
 
-    public connected(remoteId: string) {
-        this.sendProtocolMessage(protocol.connected(remoteId));
-    }
-
-    public disconnected(remoteId: string) {
-        this.sendProtocolMessage(protocol.disconnected(remoteId));
-    }
-
-    private relay(remoteId: string, message: string) {
-        this.sendProtocolMessage(protocol.relay(remoteId, message));
-    }
-
-    private relayed(remoteId: string, message: string) {
-        this.sendProtocolMessage(protocol.relayed(remoteId, message));
+    public readRelayedMessage(destination: string, message: any) {
     }
 }
 

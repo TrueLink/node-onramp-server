@@ -78,7 +78,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
      * @param {any} message        The message.
      */
     public readRelayMessage(destination: string, message: any): void {
-
+        // searching connection for destination
         var peer = this.peers.get(destination);
         if (!peer) return;
 

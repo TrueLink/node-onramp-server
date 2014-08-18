@@ -14,7 +14,7 @@ export interface Callbacks {
 }
 
 export class Protocol {
-    PROTOCOL_NAME = "p";
+    PROTOCOL_NAME = "overelay";
 
     MESSAGE_TYPE = {
         PEER_CONNECTED: 1,
@@ -56,31 +56,37 @@ export class Protocol {
     }
 
     writeConnected(address: string): void {
-        var MESSAGE_TYPE = this.MESSAGE_TYPE;
-        var callbacks = this.callbacks;
-        var message = [MESSAGE_TYPE.PEER_CONNECTED, address];
-        callbacks.writeMessage(message);
+        var message = [
+            this.MESSAGE_TYPE.PEER_CONNECTED,
+            address,
+        ];
+        this.callbacks.writeMessage(message);
     }
 
     writeDisconnected(address: string): void {
-        var MESSAGE_TYPE = this.MESSAGE_TYPE;
-        var callbacks = this.callbacks;
-        var message = [MESSAGE_TYPE.PEER_DICONNECTED, address];
-        callbacks.writeMessage(message);
+        var message = [
+            this.MESSAGE_TYPE.PEER_DICONNECTED,
+            address,
+        ];
+        this.callbacks.writeMessage(message);
     }
 
     writeRelay(address: string, content: string): void {
-        var MESSAGE_TYPE = this.MESSAGE_TYPE;
-        var callbacks = this.callbacks;
-        var message = [MESSAGE_TYPE.RELAY, address, content];
-        callbacks.writeMessage(message);
+        var message = [
+            this.MESSAGE_TYPE.RELAY,
+            address,
+            content,
+        ];
+        this.callbacks.writeMessage(message);
     }
 
     writeRelayed(address: string, content: string): void {
-        var MESSAGE_TYPE = this.MESSAGE_TYPE;
-        var callbacks = this.callbacks;
-        var message = [MESSAGE_TYPE.RELAYED, address, content];
-        callbacks.writeMessage(message);
+        var message = [
+            this.MESSAGE_TYPE.RELAYED,
+            address,
+            content,
+        ];
+        this.callbacks.writeMessage(message);
     }
 
 }

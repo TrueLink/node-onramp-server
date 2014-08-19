@@ -9,7 +9,7 @@ export interface API {
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
     on(event: string, listener: Function): events.EventEmitter;
-    removeListener(event: string, listener: Function): events.EventEmitter;
+    off(event: string, listener: Function): events.EventEmitter;
 }
 
 export class Connection extends protocol.Protocol implements protocol.Callbacks {
@@ -41,7 +41,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
             disconnected: this.writeDisconnected.bind(this),
             relayed: this.writeRelayed.bind(this),
             on: this.emitter.on.bind(this.emitter),
-            removeListener: this.emitter.removeListener.bind(this.emitter)
+            off: this.emitter.removeListener.bind(this.emitter)
         };
     }
 
@@ -49,9 +49,13 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         console.log('message', raw);
 
         if (raw.type === "utf8") {
-            var message = JSON.parse(raw.utf8Data);
-            this.readMessage(message);
+            this.readMessageData(raw.utf8Data);
         }
+    }
+
+    public readMessageData(data: string) {
+        var message = JSON.parse(data);
+        this.readMessage(message);
     }
 
     private closeHandler(): void {

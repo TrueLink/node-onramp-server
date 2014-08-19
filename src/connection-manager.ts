@@ -1,4 +1,5 @@
 ﻿import connection = require("./connection")
+import events = require("events");
 
 function noop(connection: connection.API): void {
 }
@@ -7,8 +8,16 @@ export class ConnectionManager {
     private connectionMap: { [address: string]: connection.API; } = {};
     private connectionList: Array<connection.API> = [];
 
-    public onAdd: (connection: connection.API) => void = noop;
-    public onRemove: (connection: connection.API) => void = noop;
+    private emitter: events.EventEmitter;
+
+    public on(event: string, listener: (conn: connection.API) => void) { }
+    public off(event: string, listener: (conn: connection.API) => void) { }
+
+    constructor() {
+        this.emitter = new events.EventEmitter();
+        this.on = this.emitter.on.bind(this.emitter);
+        this.off = this.emitter.removeListener.bind(this.emitter);
+    }
 
     public get(): Array<connection.API>;
     public get(address: string): connection.API;
@@ -27,7 +36,7 @@ export class ConnectionManager {
         this.connectionMap[address] = connection;
         this.connectionList.push(connection);
 
-        this.onAdd(connection);
+        this.emitter.emit("added", connection);
         return true;
     }
 
@@ -42,7 +51,7 @@ export class ConnectionManager {
         var index = this.connectionList.indexOf(connection);
         this.connectionList.splice(index, 1);
 
-        this.onRemove(connection);
+        this.emitter.emit("removed", connection);
         return true;
     }
 }

@@ -49,19 +49,19 @@ export class Server {
     private emitter: events.EventEmitter;
     private peers: connectionManager.ConnectionManager;
 
-    constructor(wsServer: websocket.server, connectionManager: connectionManager.ConnectionManager) {
+    constructor(wsServer: websocket.server, peers: connectionManager.ConnectionManager) {
         var emitter = this.emitter = new events.EventEmitter();
         this.wsServer = wsServer;
 
-        this.peers = connectionManager;
+        this.peers = peers;
 
-        this.peers.onAdd = function (peer) {
-            emitter.emit('connection', peer);
-        };
+        this.peers.on("added", function (connection) {
+            emitter.emit('connected', connection);
+        });
 
-        this.peers.onRemove = function (peer) {
-            emitter.emit('disconnection', peer);
-        };
+        this.peers.on("removed", function (connection) {
+            emitter.emit('disconnection', connection);
+        });
 
         this.wsServer.on('request', this.connectionHandler.bind(this));
     }

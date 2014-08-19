@@ -1,12 +1,24 @@
 {
   "name": "node-onramp-server",
   "version": "0.0.1",
-  "description": "",
-  "main": "app.js",
-  "author": {
-    "name": "Eugene",
-    "email": ""
+  "description": "Relay server build with websocket and nodejs",
+  "main": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/overelay/node-onramp-server.git"
   },
+  "author": "Eugene Chernyshov <chernyshov.eugene@gmail.com>",
+  "licenses": [
+    {
+      "type": "LGPLv3",
+      "url": "http://opensource.org/licenses/LGPL-3.0"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/overelay/node-onramp-server/issues",
+    "email": "chernyshov.eugene@gmail.com" 
+  },
+  "homepage": "https://github.com/overelay/node-onramp-server"
   "dependencies": {
     "commander": "^2.3.0",
     "node-uuid": "^1.4.1",

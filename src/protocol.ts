@@ -13,9 +13,9 @@ export interface Callbacks {
     readRelayedMessage(address: string, message: string): void;
 }
 
-export class Protocol {
-    PROTOCOL_NAME = "overelay";
+export var PROTOCOL_NAME = "overelay";
 
+export class Protocol {
     MESSAGE_TYPE = {
         PEER_CONNECTED: 1,
         PEER_DICONNECTED: 2,

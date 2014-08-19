@@ -110,7 +110,7 @@ export class Server {
         var address = uuid.v4();
         var peers = this.peers;
 
-        var wsConn = request.accept(protocol.name, request.origin);
+        var wsConn = request.accept(protocol.PROTOCOL_NAME, request.origin);
 
         var peer = connection.Connection.create(address, this.peers, wsConn);
 

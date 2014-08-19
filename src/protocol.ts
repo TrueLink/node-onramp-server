@@ -19,13 +19,8 @@ export class Protocol {
     MESSAGE_TYPE = {
         PEER_CONNECTED: 1,
         PEER_DICONNECTED: 2,
-
-        RELAY: 10,
-        RELAYED: 12,
-
-        RTC_OFFER: 21,
-        RTC_ANSWER: 22,
-        RTC_ICE_CANDIDATE: 23,
+        RELAY: 3,
+        RELAYED: 4,
     };
 
     private callbacks: Callbacks;
@@ -43,15 +38,21 @@ export class Protocol {
             case MESSAGE_TYPE.PEER_CONNECTED:
                 callbacks.readPeerConnectedMessage(message[1]);
                 break;
+
             case MESSAGE_TYPE.PEER_DICONNECTED:
                 callbacks.readPeerDisconnectedMessage(message[1]);
                 break;
+
             case MESSAGE_TYPE.RELAY:
                 callbacks.readRelayMessage(message[1], message[2]);
                 break;
+
             case MESSAGE_TYPE.RELAYED:
                 callbacks.readRelayedMessage(message[1], message[2]);
                 break;
+
+            default:
+                throw new Error('Unknown message type: ' + messageType);
         }
     }
 

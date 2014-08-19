@@ -18,7 +18,7 @@
     "url": "https://github.com/overelay/node-onramp-server/issues",
     "email": "chernyshov.eugene@gmail.com" 
   },
-  "homepage": "https://github.com/overelay/node-onramp-server"
+  "homepage": "https://github.com/overelay/node-onramp-server",
   "dependencies": {
     "commander": "^2.3.0",
     "node-uuid": "^1.4.1",

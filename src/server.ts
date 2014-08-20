@@ -13,15 +13,18 @@ export interface API {
     connections: connection.API[];
 }
 
+export interface ConnectionManager extends connectionManager.ConnectionManager<connection.API> {
+}
+
 export class APIImpl implements API {
     private _on: (event: string, listener: Function) => events.EventEmitter;
     private _removeListener: (event: string, listener: Function) => events.EventEmitter;
-    private _manager: connectionManager.ConnectionManager;
+    private _manager: ConnectionManager;
 
     constructor(options: {
         on: (event: string, listener: Function) => events.EventEmitter;
         removeListener: (event: string, listener: Function) => events.EventEmitter;
-        manager: connectionManager.ConnectionManager;
+        manager: ConnectionManager;
     }) {
         this._on = options.on;
         this._removeListener = options.removeListener;
@@ -47,9 +50,9 @@ export class Server {
 
     private wsServer: websocket.server;
     private emitter: events.EventEmitter;
-    private peers: connectionManager.ConnectionManager;
+    private peers: ConnectionManager;
 
-    constructor(wsServer: websocket.server, peers: connectionManager.ConnectionManager) {
+    constructor(wsServer: websocket.server, peers: ConnectionManager) {
         var emitter = this.emitter = new events.EventEmitter();
         this.wsServer = wsServer;
 
@@ -100,7 +103,7 @@ export class Server {
             });
         }
 
-        var manager = new connectionManager.ConnectionManager();
+        var manager = new connectionManager.ConnectionManager<connection.API>();
 
         var server = new Server(options.wsServer, manager);
         return server.getApi();

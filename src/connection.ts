@@ -1,35 +1,51 @@
-﻿import events = require('events');
-import websocket = require('websocket');
-import connectionManager = require("./connection-manager");
+﻿import websocket = require('websocket');
 import protocol = require('./protocol');
+
+export interface EventEmitter {
+    on(event: string, listener: Function): EventEmitter;
+    removeListener(event: string, listener: Function): EventEmitter;
+    emit(event: string, ...args: any[]): boolean;
+}
+
+export interface EventEmitterFactory {
+    new (): EventEmitter;
+}
 
 export interface API {
     address: string;
     connected(remoteId: string): void;
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
-    on(event: string, listener: Function): events.EventEmitter;
-    off(event: string, listener: Function): events.EventEmitter;
+    on(event: string, listener: Function): EventEmitter;
+    off(event: string, listener: Function): EventEmitter;
+}
+
+export interface IManager {
+    get(destination: string): API;
+    add(connection: API): boolean;
+    remove(connection: API): boolean;
 }
 
 export class Connection extends protocol.Protocol implements protocol.Callbacks {
     private address: string;
-    private peers: connectionManager.ConnectionManager;
+    private peers: IManager;
     private connection: websocket.connection;
-    private emitter: events.EventEmitter;
+    private emitter: EventEmitter;
 
-    constructor(address: string, peers: connectionManager.ConnectionManager, connection: websocket.connection) {
+    static EventEmitter: EventEmitterFactory;
+
+    constructor(address: string, peers: IManager, connection: websocket.connection) {
         super(this);
         this.address = address;
         this.peers = peers;
         this.connection = connection;
-        this.emitter = new events.EventEmitter();
+        this.emitter = new Connection.EventEmitter();
 
         connection.on('message', this.messageHandler.bind(this));
         connection.on('close', this.closeHandler.bind(this));
     }
 
-    static create(address: string, peers: connectionManager.ConnectionManager, raw: websocket.connection): API {
+    static create(address: string, peers: IManager, raw: websocket.connection): API {
         var intance = new Connection(address, peers, raw);
         return intance.getApi();
     }

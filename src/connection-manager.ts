@@ -1,26 +1,39 @@
-﻿import connection = require("./connection")
-import events = require("events");
-
-function noop(connection: connection.API): void {
+﻿export interface EventEmitter {
+    on(event: string, listener: Function): EventEmitter;
+    removeListener(event: string, listener: Function): EventEmitter;
+    emit(event: string, ...args: any[]): boolean;
 }
 
-export class ConnectionManager {
-    private connectionMap: { [address: string]: connection.API; } = {};
-    private connectionList: Array<connection.API> = [];
+export interface EventEmitterFactory {
+    new (): EventEmitter;
+}
 
-    private emitter: events.EventEmitter;
+export interface IConnection {
+    address: string;
+}
 
-    public on(event: string, listener: (conn: connection.API) => void) { }
-    public off(event: string, listener: (conn: connection.API) => void) { }
+function noop(connection: IConnection): void {
+}
+
+export class ConnectionManager<T extends IConnection> {
+    private connectionMap: { [address: string]: T; } = {};
+    private connectionList: Array<T> = [];
+
+    private emitter: EventEmitter;
+
+    static EventEmitter: EventEmitterFactory;
+
+    public on(event: string, listener: (conn: T) => void) { }
+    public off(event: string, listener: (conn: T) => void) { }
 
     constructor() {
-        this.emitter = new events.EventEmitter();
+        this.emitter = new ConnectionManager.EventEmitter();
         this.on = this.emitter.on.bind(this.emitter);
         this.off = this.emitter.removeListener.bind(this.emitter);
     }
 
-    public get(): Array<connection.API>;
-    public get(address: string): connection.API;
+    public get(): Array<T>;
+    public get(address: string): T;
     public get(address?: string): any {
         if (address === undefined) {
             return this.connectionList.slice();
@@ -29,7 +42,7 @@ export class ConnectionManager {
         return this.connectionMap[address];
     }
 
-    public add(connection: connection.API) {
+    public add(connection: T) {
         var address = connection.address;
         if (address in this.connectionMap) return false;
 
@@ -40,7 +53,7 @@ export class ConnectionManager {
         return true;
     }
 
-    public remove(connection: connection.API) {
+    public remove(connection: T) {
         var address = connection.address;
 
         var mappedConnection = this.connectionMap[address];

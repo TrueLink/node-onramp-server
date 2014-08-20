@@ -53,7 +53,8 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     private getApi(): API {
         return {
             address: this.address,
-            connected: this.writeConnected.bind(this),
+            ///connected: this.writeConnected.bind(this),
+            connected: this.writeDirect.bind(this),
             disconnected: this.writeDisconnected.bind(this),
             relayed: this.writeRelayed.bind(this),
             on: this.emitter.on.bind(this.emitter),
@@ -79,7 +80,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public writeMessage(message: any): void {
-        var stringified = JSON.stringify(message.getData());
+        var stringified = JSON.stringify(message);
         this.connection.sendUTF(stringified);
     }
 

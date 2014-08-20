@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "Relay server build with websocket and nodejs",
   "main": "",
+  "scripts": {
+    "start": "node ./lib -h 127.0.0.1"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/overelay/node-onramp-server.git"
@@ -16,12 +19,17 @@
   ],
   "bugs": {
     "url": "https://github.com/overelay/node-onramp-server/issues",
-    "email": "chernyshov.eugene@gmail.com" 
+    "email": "chernyshov.eugene@gmail.com"
   },
   "homepage": "https://github.com/overelay/node-onramp-server",
   "dependencies": {
     "commander": "^2.3.0",
     "node-uuid": "^1.4.1",
     "websocket": "^1.0.8"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-ts": "^1.11.6"
   }
 }

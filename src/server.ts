@@ -4,12 +4,16 @@ import events = require('events');
 import websocket = require('websocket');
 
 import connectionManager = require("./connection-manager");
+connectionManager.ConnectionManager.EventEmitter = events.EventEmitter;
+
 import connection = require("./connection");
+connection.Connection.EventEmitter = events.EventEmitter;
+
 import protocol = require("./protocol");
 
 export interface API {
     on(event: string, listener: Function): events.EventEmitter;
-    removeListener(event: string, listener: Function): events.EventEmitter;
+    off(event: string, listener: Function): events.EventEmitter;
     connections: connection.API[];
 }
 
@@ -18,16 +22,16 @@ export interface ConnectionManager extends connectionManager.ConnectionManager<c
 
 export class APIImpl implements API {
     private _on: (event: string, listener: Function) => events.EventEmitter;
-    private _removeListener: (event: string, listener: Function) => events.EventEmitter;
+    private _off: (event: string, listener: Function) => events.EventEmitter;
     private _manager: ConnectionManager;
 
     constructor(options: {
         on: (event: string, listener: Function) => events.EventEmitter;
-        removeListener: (event: string, listener: Function) => events.EventEmitter;
+        off: (event: string, listener: Function) => events.EventEmitter;
         manager: ConnectionManager;
     }) {
         this._on = options.on;
-        this._removeListener = options.removeListener;
+        this._off = options.off;
         this._manager = options.manager;
     }
 
@@ -35,8 +39,8 @@ export class APIImpl implements API {
         return this._on(event, listener);
     }
 
-    removeListener(event: string, listener: Function): events.EventEmitter {
-        return this._removeListener(event, listener);
+    off(event: string, listener: Function): events.EventEmitter {
+        return this._off(event, listener);
     }
 
     get connections(): connection.API[] {
@@ -63,7 +67,7 @@ export class Server {
         });
 
         this.peers.on("removed", function (connection) {
-            emitter.emit('disconnection', connection);
+            emitter.emit('disconnected', connection);
         });
 
         this.wsServer.on('request', this.connectionHandler.bind(this));
@@ -78,7 +82,7 @@ export class Server {
     } = {}) {
 
         if (options.host) {
-            var host: string[] = options.host.split(':');
+            var host = options.host.split(':');
 
             if (!('hostname' in options)) options.hostname = host[0];
             if (!('port' in options) && host[1]) options.port = parseInt(host[1]);
@@ -127,7 +131,7 @@ export class Server {
     private getApi(): API {
         return new APIImpl({
             on: this.emitter.on.bind(this.emitter),
-            removeListener: this.emitter.removeListener.bind(this.emitter),
+            off: this.emitter.removeListener.bind(this.emitter),
             manager: this.peers,
         });
     }

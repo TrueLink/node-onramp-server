@@ -22,8 +22,6 @@ export interface API {
 
 export interface IManager {
     get(destination: string): API;
-    add(connection: API): boolean;
-    remove(connection: API): boolean;
 }
 
 export class Connection extends protocol.Protocol implements protocol.Callbacks {

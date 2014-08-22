@@ -1,5 +1,6 @@
 ﻿import websocket = require('websocket');
-import protocol = require('./protocol');
+import client = require('browser-relay-client');
+import protocol = client.protocol;
 
 export interface EventEmitter {
     on(event: string, listener: Function): EventEmitter;

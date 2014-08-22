@@ -2,9 +2,6 @@
 module.exports = function (grunt) {
     'use strict';
 
-    var fs = require('fs');
-    var path = require('path');
-
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-ts');
 
@@ -19,18 +16,20 @@ module.exports = function (grunt) {
             build: {
                 src: [
                     'src/**/*.ts',
-                    'typings/**/*.d.ts'
+                    'typings/**/*.d.ts',
                     ],
                 outDir: 'lib',
                 options: {
+                    fast: 'never',
                     compile: true,
+                    noImplicitAny: true,
                     comments: true,
                     target: 'es5',
                     module: 'commonjs',
                     sourceMap: true,
-                    sourceRoot: '',
                     mapRoot: '',
-                    declaration: false
+                    declaration: true,
+                    sourceRoot: 'src',
                 }
             }
         },

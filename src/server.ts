@@ -2,14 +2,14 @@
 import uuid = require('node-uuid');
 import events = require('events');
 import websocket = require('websocket');
-
-import connectionManager = require("./connection-manager");
-connectionManager.ConnectionManager.EventEmitter = events.EventEmitter;
-
 import connection = require("./connection");
-connection.Connection.EventEmitter = events.EventEmitter;
 
-import protocol = require("./protocol");
+import client = require("browser-relay-client");
+import connectionManager = client.connectionManager;
+import protocol = client.protocol;
+
+connectionManager.ConnectionManager.EventEmitter = events.EventEmitter;
+connection.Connection.EventEmitter = events.EventEmitter;
 
 export interface API {
     on(event: string, listener: Function): events.EventEmitter;

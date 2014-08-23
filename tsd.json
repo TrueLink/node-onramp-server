@@ -13,6 +13,9 @@
     },
     "websocket/websocket.d.ts": {
       "commit": "d4b55bafc0c9c4a2338cb427a4eeaf6023f12a24"
+    },
+    "commander/commander.d.ts": {
+      "commit": "807ba77ee6af4e587618535b0d820f03e3353823"
     }
   }
 }

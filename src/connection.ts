@@ -21,19 +21,19 @@ export interface API {
     off(event: string, listener: Function): EventEmitter;
 }
 
-export interface IManager {
+export interface ConnectionsManager {
     get(destination: string): API;
 }
 
 export class Connection extends protocol.Protocol implements protocol.Callbacks {
     private address: string;
-    private peers: IManager;
+    private peers: ConnectionsManager;
     private connection: websocket.connection;
     private emitter: EventEmitter;
 
     static EventEmitter: EventEmitterFactory;
 
-    constructor(address: string, peers: IManager, connection: websocket.connection) {
+    constructor(address: string, peers: ConnectionsManager, connection: websocket.connection) {
         super(this);
         this.address = address;
         this.peers = peers;
@@ -44,7 +44,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         connection.on('close', this.closeHandler.bind(this));
     }
 
-    static create(address: string, peers: IManager, raw: websocket.connection): API {
+    static create(address: string, peers: ConnectionsManager, raw: websocket.connection): API {
         var intance = new Connection(address, peers, raw);
         return intance.getApi();
     }

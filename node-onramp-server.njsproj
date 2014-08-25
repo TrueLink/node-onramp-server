@@ -57,6 +57,9 @@
     <Folder Include="typings\node\" />
     <Folder Include="typings\websocket\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Gruntfile.js" />
+  </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
   <ProjectExtensions>
     <VisualStudio>

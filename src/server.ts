@@ -64,11 +64,11 @@ export class Server {
         this.onConnected = new event.Event<connection.API>();
         this.onDisconnected = new event.Event<connection.API>();
 
-        this.peers.onAdded.on((connection) => {
+        this.peers.onAdd.on((connection) => {
             this.onConnected.emit(connection);
         });
 
-        this.peers.onRemoved.on((connection) => {
+        this.peers.onRemove.on((connection) => {
             this.onDisconnected.emit(connection);
         });
 

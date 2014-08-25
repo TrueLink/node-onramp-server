@@ -1,32 +1,23 @@
 ﻿import websocket = require('websocket');
 import protocol = client.protocol;
-export interface EventEmitter {
-    on(event: string, listener: Function): EventEmitter;
-    removeListener(event: string, listener: Function): EventEmitter;
-    emit(event: string, ...args: any[]): boolean;
-}
-export interface EventEmitterFactory {
-    new(): EventEmitter;
-}
+import event = client.event;
 export interface API {
     address: string;
     connected(remoteId: string): void;
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
-    on(event: string, listener: Function): EventEmitter;
-    off(event: string, listener: Function): EventEmitter;
+    onClose: Event<API>;
 }
-export interface IManager {
+export interface ConnectionsManager {
     get(destination: string): API;
 }
 export declare class Connection extends Protocol implements Callbacks {
     private address;
     private peers;
     private connection;
-    private emitter;
-    static EventEmitter: EventEmitterFactory;
-    constructor(address: string, peers: IManager, connection: websocket.connection);
-    static create(address: string, peers: IManager, raw: websocket.connection): API;
+    private onClose;
+    constructor(address: string, peers: ConnectionsManager, connection: websocket.connection);
+    static create(address: string, peers: ConnectionsManager, raw: websocket.connection): API;
     private getApi();
     private messageHandler(raw);
     public readMessageData(data: string): void;

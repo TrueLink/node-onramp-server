@@ -12,7 +12,7 @@ var host = (<any>app)["host"];
 
 var onramp = server.Server.create({ host: host });
 
-onramp.on('connected', function (conn: connection.API) {
+onramp.onConnected.on((conn: connection.API) => {
     console.log('peer connected: ' + conn.address);
     onramp.connections.forEach(function (other) {
         conn.connected(other.address);
@@ -20,7 +20,7 @@ onramp.on('connected', function (conn: connection.API) {
     });
 });
 
-onramp.on('disconnected', function (conn: connection.API) {
+onramp.onConnected.on((conn: connection.API) => {
     console.log('peer disconnected: ' + conn.address);
     onramp.connections.forEach(function (other) {
         other.disconnected(conn.address);

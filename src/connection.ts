@@ -1,24 +1,14 @@
 ﻿import websocket = require('websocket');
 import client = require('browser-relay-client');
 import protocol = client.protocol;
-
-export interface EventEmitter {
-    on(event: string, listener: Function): EventEmitter;
-    removeListener(event: string, listener: Function): EventEmitter;
-    emit(event: string, ...args: any[]): boolean;
-}
-
-export interface EventEmitterFactory {
-    new (): EventEmitter;
-}
+import event = client.event;
 
 export interface API {
     address: string;
     connected(remoteId: string): void;
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
-    on(event: string, listener: Function): EventEmitter;
-    off(event: string, listener: Function): EventEmitter;
+    onClose: event.Event<API>;
 }
 
 export interface ConnectionsManager {
@@ -29,16 +19,16 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     private address: string;
     private peers: ConnectionsManager;
     private connection: websocket.connection;
-    private emitter: EventEmitter;
 
-    static EventEmitter: EventEmitterFactory;
+    private onClose: event.Event<API>;
 
     constructor(address: string, peers: ConnectionsManager, connection: websocket.connection) {
         super(this);
         this.address = address;
         this.peers = peers;
         this.connection = connection;
-        this.emitter = new Connection.EventEmitter();
+
+        this.onClose = new event.Event<API>();
 
         connection.on('message', this.messageHandler.bind(this));
         connection.on('close', this.closeHandler.bind(this));
@@ -56,8 +46,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
             connected: this.writeDirect.bind(this),
             disconnected: this.writeDisconnected.bind(this),
             relayed: this.writeRelayed.bind(this),
-            on: this.emitter.on.bind(this.emitter),
-            off: this.emitter.removeListener.bind(this.emitter)
+            onClose: this.onClose,
         };
     }
 
@@ -75,7 +64,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     private closeHandler(): void {
-        this.emitter.emit('close');
+        this.onClose.emit(this.getApi());
     }
 
     public writeMessage(message: any): void {

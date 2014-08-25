@@ -1,33 +1,34 @@
 ﻿import http = require('http');
-import events = require('events');
 import websocket = require('websocket');
 import connection = require("./connection");
 import connectionManager = client.connectionManager;
+import event = client.event;
 export interface API {
-    on(event: string, listener: Function): events.EventEmitter;
-    off(event: string, listener: Function): events.EventEmitter;
     connections: connection.API[];
+    onConnected: Event<connection.API>;
+    onDisconnected: Event<connection.API>;
 }
 export interface ConnectionManager extends ConnectionManager<connection.API> {
 }
 export declare class APIImpl implements API {
-    private _on;
-    private _off;
     private _manager;
+    private _onConnected;
+    private _onDisconnected;
     constructor(options: {
-        on: (event: string, listener: Function) => events.EventEmitter;
-        off: (event: string, listener: Function) => events.EventEmitter;
         manager: ConnectionManager;
+        onConnected: Event<connection.API>;
+        onDisconnected: Event<connection.API>;
     });
-    public on(event: string, listener: Function): events.EventEmitter;
-    public off(event: string, listener: Function): events.EventEmitter;
     public connections : connection.API[];
+    public onConnected : Event<connection.API>;
+    public onDisconnected : Event<connection.API>;
 }
 export declare class Server {
     static DEFAULT_PORT: number;
     private wsServer;
-    private emitter;
     private peers;
+    private onConnected;
+    private onDisconnected;
     constructor(wsServer: websocket.server, peers: ConnectionManager);
     static create(options?: {
         host?: string;

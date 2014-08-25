@@ -1,50 +1,48 @@
 ﻿import http = require('http');
 import uuid = require('node-uuid');
-import events = require('events');
 import websocket = require('websocket');
 import connection = require("./connection");
 
 import client = require("browser-relay-client");
 import connectionManager = client.connectionManager;
 import protocol = client.protocol;
-
-connectionManager.ConnectionManager.EventEmitter = events.EventEmitter;
-connection.Connection.EventEmitter = events.EventEmitter;
+import event = client.event;
 
 export interface API {
-    on(event: string, listener: Function): events.EventEmitter;
-    off(event: string, listener: Function): events.EventEmitter;
     connections: connection.API[];
+    onConnected: event.Event<connection.API>;
+    onDisconnected: event.Event<connection.API>;
 }
 
 export interface ConnectionManager extends connectionManager.ConnectionManager<connection.API> {
 }
 
 export class APIImpl implements API {
-    private _on: (event: string, listener: Function) => events.EventEmitter;
-    private _off: (event: string, listener: Function) => events.EventEmitter;
     private _manager: ConnectionManager;
 
+    private _onConnected: event.Event<connection.API>;
+    private _onDisconnected: event.Event<connection.API>;
+
     constructor(options: {
-        on: (event: string, listener: Function) => events.EventEmitter;
-        off: (event: string, listener: Function) => events.EventEmitter;
         manager: ConnectionManager;
+        onConnected: event.Event<connection.API>;
+        onDisconnected: event.Event<connection.API>;
     }) {
-        this._on = options.on;
-        this._off = options.off;
         this._manager = options.manager;
+        this._onConnected = options.onConnected;
+        this._onDisconnected = options.onDisconnected;
     }
 
-    on(event: string, listener: Function): events.EventEmitter {
-        return this._on(event, listener);
-    }
-
-    off(event: string, listener: Function): events.EventEmitter {
-        return this._off(event, listener);
-    }
-
-    get connections(): connection.API[] {
+    public get connections(): connection.API[] {
         return this._manager.get();
+    }
+
+    public get onConnected(): event.Event<connection.API> {
+        return this._onConnected;
+    }
+
+    public get onDisconnected(): event.Event<connection.API> {
+        return this._onDisconnected;
     }
 }
 
@@ -53,21 +51,25 @@ export class Server {
     static DEFAULT_PORT: number = 20500;
 
     private wsServer: websocket.server;
-    private emitter: events.EventEmitter;
     private peers: ConnectionManager;
 
+    private onConnected: event.Event<connection.API>;
+    private onDisconnected: event.Event<connection.API>;
+
     constructor(wsServer: websocket.server, peers: ConnectionManager) {
-        var emitter = this.emitter = new events.EventEmitter();
         this.wsServer = wsServer;
 
         this.peers = peers;
 
-        this.peers.on("added", function (connection) {
-            emitter.emit('connected', connection);
+        this.onConnected = new event.Event<connection.API>();
+        this.onDisconnected = new event.Event<connection.API>();
+
+        this.peers.onAdded.on((connection) => {
+            this.onConnected.emit(connection);
         });
 
-        this.peers.on("removed", function (connection) {
-            emitter.emit('disconnected', connection);
+        this.peers.onRemoved.on((connection) => {
+            this.onDisconnected.emit(connection);
         });
 
         this.wsServer.on('request', this.connectionHandler.bind(this));
@@ -123,16 +125,16 @@ export class Server {
 
         peers.add(peer);
 
-        peer.on('close', function () {
+        peer.onClose.on((peer) => {
             peers.remove(peer);
         });
     }
 
     private getApi(): API {
         return new APIImpl({
-            on: this.emitter.on.bind(this.emitter),
-            off: this.emitter.removeListener.bind(this.emitter),
             manager: this.peers,
+            onConnected: this.onConnected,
+            onDisconnected: this.onDisconnected,
         });
     }
 }

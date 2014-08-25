@@ -125,6 +125,12 @@ export class Server {
 
         peers.add(peer);
 
+        peer.onRelay.on((data) => {
+            var peer = this.peers.get(data.destination);
+            if (!peer) return;
+            peer.relayed(peer.address, data.message);
+        });
+
         peer.onClose.on((peer) => {
             peers.remove(peer);
         });

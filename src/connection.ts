@@ -3,39 +3,41 @@ import client = require('browser-relay-client');
 import protocol = client.protocol;
 import event = client.event;
 
+export interface RelayData {
+    destination: string;
+    message: any;
+}
+
 export interface API {
     address: string;
     connected(remoteId: string): void;
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
     onClose: event.Event<API>;
-}
-
-export interface ConnectionsManager {
-    get(destination: string): API;
+    onRelay: event.Event<RelayData>;
 }
 
 export class Connection extends protocol.Protocol implements protocol.Callbacks {
     private address: string;
-    private peers: ConnectionsManager;
     private connection: websocket.connection;
 
     private onClose: event.Event<API>;
+    private onRelay: event.Event<RelayData>;
 
-    constructor(address: string, peers: ConnectionsManager, connection: websocket.connection) {
+    constructor(address: string, connection: websocket.connection) {
         super(this);
         this.address = address;
-        this.peers = peers;
         this.connection = connection;
 
         this.onClose = new event.Event<API>();
+        this.onRelay = new event.Event<RelayData>();
 
         connection.on('message', this.messageHandler.bind(this));
         connection.on('close', this.closeHandler.bind(this));
     }
 
-    static create(address: string, peers: ConnectionsManager, raw: websocket.connection): API {
-        var intance = new Connection(address, peers, raw);
+    static create(address: string, raw: websocket.connection): API {
+        var intance = new Connection(address, raw);
         return intance.getApi();
     }
 
@@ -47,6 +49,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
             disconnected: this.writeDisconnected.bind(this),
             relayed: this.writeRelayed.bind(this),
             onClose: this.onClose,
+            onRelay: this.onRelay,
         };
     }
 
@@ -87,12 +90,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
      * @param {any} message        The message.
      */
     public readRelayMessage(destination: string, message: any): void {
-        // searching connection for destination
-        var peer = this.peers.get(destination);
-        if (!peer) return;
-
-        // sending message to destination
-        peer.relayed(this.address, message);
+        this.onRelay.emit({ destination: destination, message: message })
     }
 
     public readRelayedMessage(destination: string, message: any): void {

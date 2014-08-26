@@ -1,10 +1,10 @@
 ﻿import websocket = require('websocket');
 import client = require('browser-relay-client');
+import connectionManager = client.connectionManager;
 import protocol = client.protocol;
 import event = client.event;
 
 export interface RelayData {
-    source: API;
     destination: string;
     message: any;
 }
@@ -14,7 +14,7 @@ export interface API {
     connected(remoteId: string): void;
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
-    onClose: event.Event<API>;
+    onClose: event.Event<string>;
     onRelay: event.Event<RelayData>;
 }
 
@@ -22,7 +22,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     private address: string;
     private connection: websocket.connection;
 
-    private onClose: event.Event<API>;
+    private onClose: event.Event<string>;
     private onRelay: event.Event<RelayData>;
 
     constructor(address: string, connection: websocket.connection) {
@@ -30,7 +30,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         this.address = address;
         this.connection = connection;
 
-        this.onClose = new event.Event<API>();
+        this.onClose = new event.Event<string>();
         this.onRelay = new event.Event<RelayData>();
 
         connection.on('message', this.messageHandler.bind(this));
@@ -38,15 +38,14 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     static create(address: string, raw: websocket.connection): API {
-        var intance = new Connection(address, raw);
-        return intance.getApi();
+        var instance = new Connection(address, raw);
+        return instance.getApi();
     }
 
     private getApi(): API {
         return {
             address: this.address,
-            ///connected: this.writeConnected.bind(this),
-            connected: this.writeDirect.bind(this),
+            connected: this.writeConnected.bind(this),
             disconnected: this.writeDisconnected.bind(this),
             relayed: this.writeRelayed.bind(this),
             onClose: this.onClose,
@@ -67,7 +66,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     private closeHandler(): void {
-        this.onClose.emit(this.getApi());
+        this.onClose.emit(this.address);
     }
 
     public writeMessage(message: any): void {
@@ -92,7 +91,6 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
      */
     public readRelayMessage(destination: string, message: any): void {
         this.onRelay.emit({
-            source: this.getApi(),
             destination: destination,
             message: message
         })

@@ -139,11 +139,11 @@ export class Server {
         peer.onRelay.on((data) => {
             var destination = this.peers.get(data.destination);
             if (!destination) return;
-            console.log("relaying message from " + data.source.address + " to " + data.destination);
-            destination.relayed(data.source.address, data.message);
+            console.log("relaying message from " + peer.address + " to " + data.destination);
+            destination.relayed(peer.address, data.message);
         });
 
-        peer.onClose.on((peer) => {
+        peer.onClose.on((address) => {
             peers.remove(peer);
         });
     }

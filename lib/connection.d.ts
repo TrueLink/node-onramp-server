@@ -2,7 +2,6 @@
 import protocol = client.protocol;
 import event = client.event;
 export interface RelayData {
-    source: API;
     destination: string;
     message: any;
 }
@@ -11,7 +10,7 @@ export interface API {
     connected(remoteId: string): void;
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
-    onClose: Event<API>;
+    onClose: Event<string>;
     onRelay: Event<RelayData>;
 }
 export declare class Connection extends Protocol implements Callbacks {

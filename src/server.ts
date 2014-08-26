@@ -66,10 +66,21 @@ export class Server {
 
         this.peers.onAdd.on((connection) => {
             this.onConnected.emit(connection);
+            console.log('peer connected: ' + connection.address + " (" + this.peers.length + ")");
+            this.peers.get().forEach(function (other) {
+                if (other === connection) return;
+                connection.connected(other.address);
+                other.connected(connection.address);
+            });
         });
 
         this.peers.onRemove.on((connection) => {
             this.onDisconnected.emit(connection);
+            console.log('peer disconnected: ' + connection.address + " (" + this.peers.length + ")");
+            this.peers.get().forEach(function (other) {
+                if (other === connection) return;
+                other.disconnected(connection.address);
+            });
         });
 
         this.wsServer.on('request', this.connectionHandler.bind(this));
@@ -121,14 +132,15 @@ export class Server {
 
         var wsConn = request.accept(protocol.PROTOCOL_NAME, request.origin);
 
-        var peer = connection.Connection.create(address, this.peers, wsConn);
+        var peer = connection.Connection.create(address, wsConn);
 
         peers.add(peer);
 
         peer.onRelay.on((data) => {
-            var peer = this.peers.get(data.destination);
-            if (!peer) return;
-            peer.relayed(peer.address, data.message);
+            var destination = this.peers.get(data.destination);
+            if (!destination) return;
+            console.log("relaying message from " + data.source.address + " to " + data.destination);
+            destination.relayed(data.source.address, data.message);
         });
 
         peer.onClose.on((peer) => {

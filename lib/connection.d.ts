@@ -1,23 +1,26 @@
 ﻿import websocket = require('websocket');
 import protocol = client.protocol;
 import event = client.event;
+export interface RelayData {
+    source: API;
+    destination: string;
+    message: any;
+}
 export interface API {
     address: string;
     connected(remoteId: string): void;
     disconnected(remoteId: string): void;
     relayed(remoteId: string, message: string): void;
     onClose: Event<API>;
-}
-export interface ConnectionsManager {
-    get(destination: string): API;
+    onRelay: Event<RelayData>;
 }
 export declare class Connection extends Protocol implements Callbacks {
     private address;
-    private peers;
     private connection;
     private onClose;
-    constructor(address: string, peers: ConnectionsManager, connection: websocket.connection);
-    static create(address: string, peers: ConnectionsManager, raw: websocket.connection): API;
+    private onRelay;
+    constructor(address: string, connection: websocket.connection);
+    static create(address: string, raw: websocket.connection): API;
     private getApi();
     private messageHandler(raw);
     public readMessageData(data: string): void;

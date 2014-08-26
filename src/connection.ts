@@ -4,6 +4,7 @@ import protocol = client.protocol;
 import event = client.event;
 
 export interface RelayData {
+    source: API;
     destination: string;
     message: any;
 }
@@ -54,8 +55,6 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     private messageHandler(raw: websocket.IMessage): void {
-        console.log('message', raw);
-
         if (raw.type === "utf8") {
             this.readMessageData(raw.utf8Data);
         }
@@ -63,6 +62,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
 
     public readMessageData(data: string) {
         var message = JSON.parse(data);
+        console.log("<--", message);
         this.readMessage(message);
     }
 
@@ -71,8 +71,9 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public writeMessage(message: any): void {
-        var stringified = JSON.stringify(message);
-        this.connection.sendUTF(stringified);
+        var data = JSON.stringify(message);
+        console.log("-->", data);
+        this.connection.sendUTF(data);
     }
 
     public readPeerConnectedMessage(destination: string): void {
@@ -90,7 +91,11 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
      * @param {any} message        The message.
      */
     public readRelayMessage(destination: string, message: any): void {
-        this.onRelay.emit({ destination: destination, message: message })
+        this.onRelay.emit({
+            source: this.getApi(),
+            destination: destination,
+            message: message
+        })
     }
 
     public readRelayedMessage(destination: string, message: any): void {

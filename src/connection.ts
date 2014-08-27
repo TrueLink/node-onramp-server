@@ -18,6 +18,8 @@ export interface API {
     onRelay: event.Event<RelayData>;
 }
 
+// TODO here address is actually an Id. Fix ir
+
 export class Connection extends protocol.Protocol implements protocol.Callbacks {
     private address: string;
     private connection: websocket.connection;
@@ -39,6 +41,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
 
     static create(address: string, raw: websocket.connection): API {
         var instance = new Connection(address, raw);
+        instance.writeIdentification(instance.address);
         return instance.getApi();
     }
 
@@ -81,6 +84,10 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
 
     public readPeerDisconnectedMessage(destination: string): void {
         console.error("onramp server have nothing to do with connectivity map");
+    }
+
+    public readIdentificationMessage(id: string): void {
+        console.error("don't give me a names");        
     }
 
     /**

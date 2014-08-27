@@ -27,6 +27,7 @@ export declare class Connection extends Protocol implements Callbacks {
     public writeMessage(message: any): void;
     public readPeerConnectedMessage(destination: string): void;
     public readPeerDisconnectedMessage(destination: string): void;
+    public readIdentificationMessage(id: string): void;
     /**
     * Received message that has to be sent to another destination.
     *

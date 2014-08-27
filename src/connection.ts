@@ -76,11 +76,11 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public readPeerConnectedMessage(destination: string): void {
-        throw new Error("onramp server have nothing to do with connectivity map");
+        console.error("onramp server have nothing to do with connectivity map");
     }
 
     public readPeerDisconnectedMessage(destination: string): void {
-        throw new Error("onramp server have nothing to do with connectivity map");
+        console.error("onramp server have nothing to do with connectivity map");
     }
 
     /**
@@ -97,7 +97,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public readRelayedMessage(destination: string, message: any): void {
-        throw new Error("onramp server can't receive messages");
+        console.error("onramp server can't receive messages");
     }
 }
 

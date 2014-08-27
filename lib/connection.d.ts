@@ -7,9 +7,9 @@ export interface RelayData {
 }
 export interface API {
     address: string;
-    connected(remoteId: string): void;
-    disconnected(remoteId: string): void;
-    relayed(remoteId: string, message: string): void;
+    connected(remoteAddr: string): void;
+    disconnected(remoteAddr: string): void;
+    relayed(remoteAddr: string, message: string): void;
     onClose: Event<string>;
     onRelay: Event<RelayData>;
 }

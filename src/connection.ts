@@ -10,27 +10,27 @@ export interface RelayData {
 }
 
 export interface API {
-    address: string;
+    endpoint: string; // readonly
     connected(remoteAddr: string): void;
     disconnected(remoteAddr: string): void;
     relayed(remoteAddr: string, message: string): void;
-    onClose: event.Event<string>;
-    onRelay: event.Event<RelayData>;
+    onClose: event.Event<string>; // readonly
+    onRelay: event.Event<RelayData>; // readonly
 }
 
-// TODO here address is actually an Id. Fix ir
+// TODO: Add websocket subclass 
 
 export class Connection extends protocol.Protocol implements protocol.Callbacks {
-    private address: string;
-    private connection: websocket.connection;
+    private _endpoint: string;
+    private _connection: websocket.connection;
 
     private onClose: event.Event<string>;
     private onRelay: event.Event<RelayData>;
 
-    constructor(address: string, connection: websocket.connection) {
+    constructor(endpoint: string, connection: websocket.connection) {
         super(this);
-        this.address = address;
-        this.connection = connection;
+        this._endpoint = endpoint;
+        this._connection = connection;
 
         this.onClose = new event.Event<string>();
         this.onRelay = new event.Event<RelayData>();
@@ -39,15 +39,15 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         connection.on('close', this.closeHandler.bind(this));
     }
 
-    static create(address: string, raw: websocket.connection): API {
-        var instance = new Connection(address, raw);
-        instance.writeIdentification(instance.address);
+    static create(endpoint: string, raw: websocket.connection): API {
+        var instance = new Connection(endpoint, raw);
+        instance.writeIdentification(instance._endpoint);
         return instance.getApi();
     }
 
     private getApi(): API {
         return {
-            address: this.address,
+            endpoint: this._endpoint,
             connected: this.writeConnected.bind(this),
             disconnected: this.writeDisconnected.bind(this),
             relayed: this.writeRelayed.bind(this),
@@ -69,13 +69,13 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     private closeHandler(): void {
-        this.onClose.emit(this.address);
+        this.onClose.emit(this._endpoint);
     }
 
     public writeMessage(message: any): void {
         var data = JSON.stringify(message);
         console.log("-->", data);
-        this.connection.sendUTF(data);
+        this._connection.sendUTF(data);
     }
 
     public readPeerConnectedMessage(destination: string): void {
@@ -90,12 +90,6 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         console.error("don't give me a names");        
     }
 
-    /**
-     * Received message that has to be sent to another destination.
-     *
-     * @param {string} destination Destination for the message.
-     * @param {any} message        The message.
-     */
     public readRelayMessage(destination: string, message: any): void {
         this.onRelay.emit({
             destination: destination,

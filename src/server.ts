@@ -46,7 +46,6 @@ export class APIImpl implements API {
     }
 }
 
-
 export class Server {
     static DEFAULT_PORT: number = 20500;
 
@@ -66,20 +65,20 @@ export class Server {
 
         this.peers.onAdd.on((connection) => {
             this.onConnected.emit(connection);
-            console.log('peer connected: ' + connection.address + " (" + this.peers.length + ")");
+            console.log('peer connected: ' + connection.endpoint + " (" + this.peers.length + ")");
             this.peers.get().forEach(function (other) {
                 if (other === connection) return;
-                connection.connected(other.address);
-                other.connected(connection.address);
+                connection.connected(other.endpoint);
+                other.connected(connection.endpoint);
             });
         });
 
         this.peers.onRemove.on((connection) => {
             this.onDisconnected.emit(connection);
-            console.log('peer disconnected: ' + connection.address + " (" + this.peers.length + ")");
+            console.log('peer disconnected: ' + connection.endpoint + " (" + this.peers.length + ")");
             this.peers.get().forEach(function (other) {
                 if (other === connection) return;
-                other.disconnected(connection.address);
+                other.disconnected(connection.endpoint);
             });
         });
 
@@ -127,20 +126,21 @@ export class Server {
     }
 
     private connectionHandler(request: websocket.request) {
-        var address = uuid.v4();
+        var rcid = uuid.v4();
         var peers = this.peers;
+        var endpoint = "ramp://" + request.host + "/" + rcid;
 
         var wsConn = request.accept(protocol.PROTOCOL_NAME, request.origin);
 
-        var peer = connection.Connection.create(address, wsConn);
+        var peer = connection.Connection.create(endpoint, wsConn);
 
         peers.add(peer);
-
+        
         peer.onRelay.on((data) => {
             var destination = this.peers.get(data.destination);
             if (!destination) return;
-            console.log("relaying message from " + peer.address + " to " + data.destination);
-            destination.relayed(peer.address, data.message);
+            console.log("relaying message from " + peer.endpoint + " to " + data.destination);
+            destination.relayed(peer.endpoint, data.message);
         });
 
         peer.onClose.on((address) => {

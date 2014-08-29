@@ -16,10 +16,10 @@ export interface API {
 export declare class Connection extends Protocol implements Callbacks {
     private _endpoint;
     private _connection;
-    private onClose;
-    private onRelay;
+    private _onClose;
+    private _onRelay;
     constructor(endpoint: string, connection: websocket.connection);
-    static create(endpoint: string, raw: websocket.connection): API;
+    static create(guid: string, endpoint: string, raw: websocket.connection): API;
     private getApi();
     private messageHandler(raw);
     public readMessageData(data: string): void;
@@ -27,7 +27,8 @@ export declare class Connection extends Protocol implements Callbacks {
     public writeMessage(message: any): void;
     public readPeerConnectedMessage(destination: string): void;
     public readPeerDisconnectedMessage(destination: string): void;
-    public readIdentificationMessage(id: string): void;
+    public readAddRoutesMessage(table: any): void;
+    public readIdentificationMessage(authority: string, endpoint: string): void;
     public readRelayMessage(destination: string, message: any): void;
     public readRelayedMessage(destination: string, message: any): void;
 }

@@ -24,8 +24,8 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     private _endpoint: string;
     private _connection: websocket.connection;
 
-    private onClose: event.Event<string>;
-    private onRelay: event.Event<RelayData>;
+    private _onClose: event.Event<string> = new event.Event<string>();
+    private _onRelay: event.Event<RelayData> = new event.Event<RelayData>();
 
     constructor(endpoint: string, connection: websocket.connection) {
         super();
@@ -35,16 +35,13 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         this._endpoint = endpoint;
         this._connection = connection;
 
-        this.onClose = new event.Event<string>();
-        this.onRelay = new event.Event<RelayData>();
-
         connection.on('message', this.messageHandler.bind(this));
         connection.on('close', this.closeHandler.bind(this));
     }
 
-    static create(endpoint: string, raw: websocket.connection): API {
+    static create(guid: string, endpoint: string, raw: websocket.connection): API {
         var instance = new Connection(endpoint, raw);
-        instance.writeIdentification(instance._endpoint);
+        instance.writeIdentification(guid, instance._endpoint);
         return instance.getApi();
     }
 
@@ -54,8 +51,8 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
             connected: this.writeConnected.bind(this),
             disconnected: this.writeDisconnected.bind(this),
             relayed: this.writeRelayed.bind(this),
-            onClose: this.onClose,
-            onRelay: this.onRelay,
+            onClose: this._onClose,
+            onRelay: this._onRelay,
         };
     }
 
@@ -72,7 +69,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     private closeHandler(): void {
-        this.onClose.emit(this._endpoint);
+        this._onClose.emit(this._endpoint);
     }
 
     public writeMessage(message: any): void {
@@ -89,12 +86,16 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         console.error("onramp server have nothing to do with connectivity map");
     }
 
-    public readIdentificationMessage(id: string): void {
+    public readAddRoutesMessage(table: any): void {
+        console.error("routing table received", table); 
+    }
+
+    public readIdentificationMessage(authority: string, endpoint: string): void {
         console.error("don't give me a names");        
     }
 
     public readRelayMessage(destination: string, message: any): void {
-        this.onRelay.emit({
+        this._onRelay.emit({
             destination: destination,
             message: message
         })

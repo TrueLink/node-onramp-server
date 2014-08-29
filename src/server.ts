@@ -8,7 +8,8 @@ import connectionManager = client.connectionManager;
 import protocol = client.protocol;
 import event = client.event;
 
-export interface API {
+export interface ServerAPI {
+    guid: string;
     connections: connection.API[];
     onConnected: event.Event<connection.API>;
     onDisconnected: event.Event<connection.API>;
@@ -17,20 +18,27 @@ export interface API {
 export interface ConnectionManager extends connectionManager.ConnectionManager<connection.API> {
 }
 
-export class APIImpl implements API {
+export class ServerAPIImpl implements ServerAPI {
+    private _guid: string;
     private _manager: ConnectionManager;
 
     private _onConnected: event.Event<connection.API>;
     private _onDisconnected: event.Event<connection.API>;
 
     constructor(options: {
+        guid: string;
         manager: ConnectionManager;
         onConnected: event.Event<connection.API>;
         onDisconnected: event.Event<connection.API>;
     }) {
+        this._guid = options.guid;
         this._manager = options.manager;
         this._onConnected = options.onConnected;
         this._onDisconnected = options.onDisconnected;
+    }
+
+    public get guid(): string {
+        return this._guid;
     }
 
     public get connections(): connection.API[] {
@@ -49,40 +57,45 @@ export class APIImpl implements API {
 export class Server {
     static DEFAULT_PORT: number = 20500;
 
-    private wsServer: websocket.server;
-    private peers: ConnectionManager;
+    private _guid: string;
+    private _wsServer: websocket.server;
+    private _peers: ConnectionManager;
 
-    private onConnected: event.Event<connection.API>;
-    private onDisconnected: event.Event<connection.API>;
+    private _onConnected: event.Event<connection.API> = new event.Event<connection.API>();
+    private _onDisconnected: event.Event<connection.API> = new event.Event<connection.API>();
 
-    constructor(wsServer: websocket.server, peers: ConnectionManager) {
-        this.wsServer = wsServer;
+    constructor(guid: string, wsServer: websocket.server, peers: ConnectionManager) {
+        this._guid = guid;
+        this._wsServer = wsServer;
 
-        this.peers = peers;
+        this._peers = peers;
 
-        this.onConnected = new event.Event<connection.API>();
-        this.onDisconnected = new event.Event<connection.API>();
+        this._peers.onAdd.on((connection) => {
+            this._onConnected.emit(connection);
+        });
 
-        this.peers.onAdd.on((connection) => {
-            this.onConnected.emit(connection);
-            console.log('peer connected: ' + connection.endpoint + " (" + this.peers.length + ")");
-            this.peers.get().forEach(function (other) {
+        this._peers.onRemove.on((connection) => {
+            this._onDisconnected.emit(connection);
+        });
+
+        this._onConnected.on((connection) => {
+            console.log('peer connected: ' + connection.endpoint + " (" + this._peers.length + ")");
+            this._peers.get().forEach(function (other) {
                 if (other === connection) return;
                 connection.connected(other.endpoint);
                 other.connected(connection.endpoint);
             });
         });
 
-        this.peers.onRemove.on((connection) => {
-            this.onDisconnected.emit(connection);
-            console.log('peer disconnected: ' + connection.endpoint + " (" + this.peers.length + ")");
-            this.peers.get().forEach(function (other) {
+        this._onDisconnected.on((connection) => {
+            console.log('peer disconnected: ' + connection.endpoint + " (" + this._peers.length + ")");
+            this._peers.get().forEach(function (other) {
                 if (other === connection) return;
                 other.disconnected(connection.endpoint);
             });
         });
 
-        this.wsServer.on('request', this.connectionHandler.bind(this));
+        this._wsServer.on('request', this.connectionHandler.bind(this));
     }
 
     public static create(options: {
@@ -92,6 +105,7 @@ export class Server {
         httpServer?: http.Server;
         wsServer?: websocket.server;
     } = {}) {
+        var guid = uuid.v4();
 
         if (options.host) {
             var host = options.host.split(':');
@@ -107,7 +121,7 @@ export class Server {
         if (!('httpServer' in options)) {
             options.httpServer = http.createServer();
 
-            console.log('onramp listening on ' + (options.hostname ? options.hostname : "*") + ":" + options.port);
+            console.log('onramp listening on ' + (options.hostname ? options.hostname : "*") + ":" + options.port, guid);
 
             options.httpServer.listen(options.port, options.hostname || void 0);
         }
@@ -121,23 +135,24 @@ export class Server {
 
         var manager = new connectionManager.ConnectionManager<connection.API>();
 
-        var server = new Server(options.wsServer, manager);
+        var server = new Server(guid, options.wsServer, manager);
+
         return server.getApi();
     }
 
     private connectionHandler(request: websocket.request) {
         var rcid = uuid.v4();
-        var peers = this.peers;
+        var peers = this._peers;
         var endpoint = "ramp://" + request.host + "/" + rcid;
 
         var wsConn = request.accept(protocol.PROTOCOL_NAME, request.origin);
 
-        var peer = connection.Connection.create(endpoint, wsConn);
+        var peer = connection.Connection.create(this._guid, endpoint, wsConn);
 
         peers.add(peer);
         
         peer.onRelay.on((data) => {
-            var destination = this.peers.get(data.destination);
+            var destination = this._peers.get(data.destination);
             if (!destination) return;
             console.log("relaying message from " + peer.endpoint + " to " + data.destination);
             destination.relayed(peer.endpoint, data.message);
@@ -148,11 +163,12 @@ export class Server {
         });
     }
 
-    private getApi(): API {
-        return new APIImpl({
-            manager: this.peers,
-            onConnected: this.onConnected,
-            onDisconnected: this.onDisconnected,
+    private getApi(): ServerAPI {
+        return new ServerAPIImpl({
+            guid: this._guid,
+            manager: this._peers,
+            onConnected: this._onConnected,
+            onDisconnected: this._onDisconnected,
         });
     }
 }

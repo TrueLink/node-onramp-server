@@ -28,7 +28,10 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     private onRelay: event.Event<RelayData>;
 
     constructor(endpoint: string, connection: websocket.connection) {
-        super(this);
+        super();
+
+        this.setReactions(this);
+
         this._endpoint = endpoint;
         this._connection = connection;
 

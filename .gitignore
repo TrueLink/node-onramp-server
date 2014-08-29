@@ -7,3 +7,4 @@ temp/
 .tscache/
 .baseDir.ts
 .ntvs_analysis.dat.tmp
+lib/

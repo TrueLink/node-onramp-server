@@ -7,12 +7,14 @@ import client = require("browser-relay-client");
 import connectionManager = client.connectionManager;
 import protocol = client.protocol;
 import event = client.event;
+import routing = client.routingTable;
 
 export interface ServerAPI {
     guid: string;
     connections: connection.API[];
     onConnected: event.Event<connection.API>;
     onDisconnected: event.Event<connection.API>;
+    onRoutingChanged: event.Event<any>;
 }
 
 export interface ConnectionManager extends connectionManager.ConnectionManager<connection.API> {
@@ -24,17 +26,20 @@ export class ServerAPIImpl implements ServerAPI {
 
     private _onConnected: event.Event<connection.API>;
     private _onDisconnected: event.Event<connection.API>;
+    private _onRoutingChanged: event.Event<any>;
 
     constructor(options: {
         guid: string;
         manager: ConnectionManager;
         onConnected: event.Event<connection.API>;
         onDisconnected: event.Event<connection.API>;
+        onRoutingChanged: event.Event<any>;
     }) {
         this._guid = options.guid;
         this._manager = options.manager;
         this._onConnected = options.onConnected;
         this._onDisconnected = options.onDisconnected;
+        this._onRoutingChanged = options.onRoutingChanged;
     }
 
     public get guid(): string {
@@ -52,23 +57,33 @@ export class ServerAPIImpl implements ServerAPI {
     public get onDisconnected(): event.Event<connection.API> {
         return this._onDisconnected;
     }
+
+    public get onRoutingChanged(): event.Event<any> {
+        return this._onRoutingChanged;
+    }
 }
 
 export class Server {
     static DEFAULT_PORT: number = 20500;
 
     private _guid: string;
+    private _address: string;
     private _wsServer: websocket.server;
     private _peers: ConnectionManager;
+    private _routing: routing.RoutingTable = new routing.RoutingTable();
 
     private _onConnected: event.Event<connection.API> = new event.Event<connection.API>();
     private _onDisconnected: event.Event<connection.API> = new event.Event<connection.API>();
+    private _onRoutingChanged: event.Event<any> = new event.Event<any>();
 
-    constructor(guid: string, wsServer: websocket.server, peers: ConnectionManager) {
+    constructor(guid: string, address:string, wsServer: websocket.server, peers: ConnectionManager) {
         this._guid = guid;
         this._wsServer = wsServer;
 
         this._peers = peers;
+        this._address = address;
+
+        this._routing.add(new routing.RoutingRow(this._guid, null, this._address));
 
         this._peers.onAdd.on((connection) => {
             this._onConnected.emit(connection);
@@ -95,6 +110,12 @@ export class Server {
             });
         });
 
+        this._onRoutingChanged.on((table) => {
+            this._peers.get().forEach(function (other) {
+                other.addroutes(table);
+            });
+        });
+
         this._wsServer.on('request', this.connectionHandler.bind(this));
     }
 
@@ -102,7 +123,6 @@ export class Server {
         host?: string;
         hostname?: string;
         port?: number;
-        httpServer?: http.Server;
         wsServer?: websocket.server;
     } = {}) {
         var guid = uuid.v4();
@@ -118,24 +138,19 @@ export class Server {
             options.port = Server.DEFAULT_PORT;
         }
 
-        if (!('httpServer' in options)) {
-            options.httpServer = http.createServer();
+        var address = "ws://" + (options.hostname ? options.hostname : "*") + ":" + options.port;
+        var httpServer = http.createServer();
+        console.log('onramp listening on ' + address, guid);
+        httpServer.listen(options.port, options.hostname || void 0);
 
-            console.log('onramp listening on ' + (options.hostname ? options.hostname : "*") + ":" + options.port, guid);
-
-            options.httpServer.listen(options.port, options.hostname || void 0);
-        }
-
-        if (!('wsServer' in options)) {
-            options.wsServer = new websocket.server({
-                httpServer: options.httpServer,
-                autoAcceptConnections: false
-            });
-        }
+        var wsServer = new websocket.server({
+            httpServer: httpServer,
+            autoAcceptConnections: false
+        });
 
         var manager = new connectionManager.ConnectionManager<connection.API>();
 
-        var server = new Server(guid, options.wsServer, manager);
+        var server = new Server(guid, address, wsServer, manager);
 
         return server.getApi();
     }
@@ -161,6 +176,16 @@ export class Server {
         peer.onClose.on((address) => {
             peers.remove(peer);
         });
+
+        peer.onRoutesReceived.on((table) => {
+            var routes = routing.RoutingTable.deserialize(table);
+            routes.subtract(this._routing);
+            if (routes.length > 0) {
+                this._routing.update(routes);
+                var table = this._routing.serialize();
+                this._onRoutingChanged.emit(table);
+            }
+        });
     }
 
     private getApi(): ServerAPI {
@@ -169,6 +194,7 @@ export class Server {
             manager: this._peers,
             onConnected: this._onConnected,
             onDisconnected: this._onDisconnected,
+            onRoutingChanged: this._onRoutingChanged,
         });
     }
 }

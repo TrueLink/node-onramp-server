@@ -4,6 +4,11 @@ import connectionManager = client.connectionManager;
 import protocol = client.protocol;
 import event = client.event;
 
+export interface IdentificationData {
+    authority: string;
+    endpoint: string;
+}
+
 export interface RelayData {
     destination: string;
     message: any;
@@ -13,9 +18,11 @@ export interface API {
     endpoint: string; // readonly
     connected(remoteAddr: string): void;
     disconnected(remoteAddr: string): void;
+    addroutes(routes: any): void;
     relayed(remoteAddr: string, message: string): void;
     onClose: event.Event<string>; // readonly
     onRelay: event.Event<RelayData>; // readonly
+    onRoutesReceived: event.Event<any>; // readonly
 }
 
 // TODO: Add websocket subclass 
@@ -26,6 +33,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
 
     private _onClose: event.Event<string> = new event.Event<string>();
     private _onRelay: event.Event<RelayData> = new event.Event<RelayData>();
+    private _onRoutesReceived: event.Event<any> = new event.Event<any>();
 
     constructor(endpoint: string, connection: websocket.connection) {
         super();
@@ -50,9 +58,11 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
             endpoint: this._endpoint,
             connected: this.writeConnected.bind(this),
             disconnected: this.writeDisconnected.bind(this),
+            addroutes: this.writeAddRoutes.bind(this),
             relayed: this.writeRelayed.bind(this),
             onClose: this._onClose,
             onRelay: this._onRelay,
+            onRoutesReceived: this._onRoutesReceived,
         };
     }
 
@@ -87,11 +97,11 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public readAddRoutesMessage(table: any): void {
-        console.error("routing table received", table); 
+        this._onRoutesReceived.emit(table);
     }
 
     public readIdentificationMessage(authority: string, endpoint: string): void {
-        console.error("don't give me a names");        
+        
     }
 
     public readRelayMessage(destination: string, message: any): void {

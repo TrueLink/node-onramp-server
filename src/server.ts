@@ -11,56 +11,13 @@ import routing = client.routingTable;
 
 export interface ServerAPI {
     guid: string;
-    connections: connection.API[];
+    connections(): connection.API[];
     onConnected: event.Event<connection.API>;
     onDisconnected: event.Event<connection.API>;
     onRoutingChanged: event.Event<any>;
 }
 
 export interface ConnectionManager extends connectionManager.ConnectionManager<connection.API> {
-}
-
-export class ServerAPIImpl implements ServerAPI {
-    private _guid: string;
-    private _manager: ConnectionManager;
-
-    private _onConnected: event.Event<connection.API>;
-    private _onDisconnected: event.Event<connection.API>;
-    private _onRoutingChanged: event.Event<any>;
-
-    constructor(options: {
-        guid: string;
-        manager: ConnectionManager;
-        onConnected: event.Event<connection.API>;
-        onDisconnected: event.Event<connection.API>;
-        onRoutingChanged: event.Event<any>;
-    }) {
-        this._guid = options.guid;
-        this._manager = options.manager;
-        this._onConnected = options.onConnected;
-        this._onDisconnected = options.onDisconnected;
-        this._onRoutingChanged = options.onRoutingChanged;
-    }
-
-    public get guid(): string {
-        return this._guid;
-    }
-
-    public get connections(): connection.API[] {
-        return this._manager.get();
-    }
-
-    public get onConnected(): event.Event<connection.API> {
-        return this._onConnected;
-    }
-
-    public get onDisconnected(): event.Event<connection.API> {
-        return this._onDisconnected;
-    }
-
-    public get onRoutingChanged(): event.Event<any> {
-        return this._onRoutingChanged;
-    }
 }
 
 export class Server {
@@ -76,7 +33,7 @@ export class Server {
     private _onDisconnected: event.Event<connection.API> = new event.Event<connection.API>();
     private _onRoutingChanged: event.Event<any> = new event.Event<any>();
 
-    constructor(guid: string, address:string, wsServer: websocket.server, peers: ConnectionManager) {
+    constructor(guid: string, address: string, wsServer: websocket.server, peers: ConnectionManager) {
         this._guid = guid;
         this._wsServer = wsServer;
 
@@ -165,7 +122,7 @@ export class Server {
         var peer = connection.Connection.create(this._guid, endpoint, wsConn);
 
         peers.add(peer);
-        
+
         peer.onRelay.on((data) => {
             var destination = this._peers.get(data.destination);
             if (!destination) return;
@@ -189,13 +146,15 @@ export class Server {
     }
 
     private getApi(): ServerAPI {
-        return new ServerAPIImpl({
+        return {
             guid: this._guid,
-            manager: this._peers,
+            connections: () => {
+                return this._peers.get();
+            },
             onConnected: this._onConnected,
             onDisconnected: this._onDisconnected,
             onRoutingChanged: this._onRoutingChanged,
-        });
+        };
     }
 }
 

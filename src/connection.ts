@@ -112,7 +112,15 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public readRelayedMessage(destination: string, message: any): void {
-        console.error("onramp server can't receive messages");
+        console.warn("processing relayed message", message);
+        var MESSAGE_TYPE = this.MESSAGE_TYPE;
+        var messageType = message[0];
+
+        switch (messageType) {
+            case MESSAGE_TYPE.RELAY:
+                this.readRelayMessage(message[1], message[2]);
+                break;
+        }	
     }
 }
 

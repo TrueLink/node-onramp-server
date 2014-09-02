@@ -95,7 +95,7 @@ export class Server {
             options.port = Server.DEFAULT_PORT;
         }
 
-        var address = "ws://" + (options.hostname ? options.hostname : "*") + ":" + options.port;
+        var address = "ws://" + (options.hostname ? options.hostname : "*") + ":" + options.port + "/";
         var httpServer = http.createServer();
         console.log('onramp listening on ' + address, guid);
         httpServer.listen(options.port, options.hostname || void 0);

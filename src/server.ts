@@ -7,7 +7,7 @@ import client = require("browser-relay-client");
 import connectionManager = client.connectionManager;
 import protocol = client.protocol;
 import event = client.event;
-import routing = client.routingTable;
+import routing = client.routing;
 
 export interface ServerAPI {
     guid: string;

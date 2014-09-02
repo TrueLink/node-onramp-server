@@ -36,6 +36,7 @@
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="tsd.json" />
+    <TypeScriptCompile Include="src\.baseDir.ts" />
     <TypeScriptCompile Include="src\connection.ts" />
     <TypeScriptCompile Include="src\index.ts" />
     <TypeScriptCompile Include="src\server.ts" />

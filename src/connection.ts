@@ -16,10 +16,10 @@ export interface RelayData {
 
 export interface API {
     endpoint: string; // readonly
-    connected(remoteAddr: string): void;
-    disconnected(remoteAddr: string): void;
+    connected(endpoint: string): void;
+    disconnected(endpoint: string): void;
     addroutes(routes: any): void;
-    relayed(remoteAddr: string, message: string): void;
+    relayed(endpoint: string, message: string): void;
     onClose: event.Event<string>; // readonly
     onRelay: event.Event<RelayData>; // readonly
     onRoutesReceived: event.Event<any>; // readonly
@@ -104,9 +104,9 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
         
     }
 
-    public readRelayMessage(destination: string, message: any): void {
+    public readRelayMessage(targetEndpoint: string, message: any): void {
         this._onRelay.emit({
-            destination: destination,
+            destination: targetEndpoint,
             message: message
         })
     }

@@ -101,7 +101,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public readIdentificationMessage(authority: string, endpoint: string): void {
-        
+        console.error("onramp server have nothing to do with identification");
     }
 
     public readRelayMessage(targetEndpoint: string, message: any): void {
@@ -113,14 +113,11 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
 
     public readRelayedMessage(destination: string, message: any): void {
         console.warn("processing relayed message", message);
-        var MESSAGE_TYPE = this.MESSAGE_TYPE;
-        var messageType = message[0];
+        this.readMessage(message);
+    }
 
-        switch (messageType) {
-            case MESSAGE_TYPE.RELAY:
-                this.readRelayMessage(message[1], message[2]);
-                break;
-        }	
+    public readUserMessage(message: any): void {
+        console.error("onramp server have nothing to do with custom user messages\n\t" + message);
     }
 }
 

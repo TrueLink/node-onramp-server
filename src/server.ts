@@ -14,7 +14,7 @@ export interface ServerAPI {
     connections(): connection.API[];
     onConnected: event.Event<connection.API>;
     onDisconnected: event.Event<connection.API>;
-    onRoutingChanged: event.Event<any>;
+    onRoutingChanged: event.Event<routing.RoutingTable>;
 }
 
 export interface ConnectionManager extends connectionManager.ConnectionManager<connection.API> {
@@ -31,7 +31,7 @@ export class Server {
 
     private _onConnected: event.Event<connection.API> = new event.Event<connection.API>();
     private _onDisconnected: event.Event<connection.API> = new event.Event<connection.API>();
-    private _onRoutingChanged: event.Event<any> = new event.Event<any>();
+    private _onRoutingChanged: event.Event<any> = new event.Event<routing.RoutingTable>();
 
     constructor(guid: string, address: string, wsServer: websocket.server, peers: ConnectionManager) {
         this._guid = guid;
@@ -68,8 +68,9 @@ export class Server {
         });
 
         this._onRoutingChanged.on((table) => {
+            var serialized = table.serialize();
             this._peers.get().forEach(function (other) {
-                other.addroutes(table);
+                other.addroutes(serialized);
             });
         });
 
@@ -139,8 +140,7 @@ export class Server {
             routes.subtract(this._routing);
             if (routes.length > 0) {
                 this._routing.update(routes);
-                var table = this._routing.serialize();
-                this._onRoutingChanged.emit(table);
+                this._onRoutingChanged.emit(this._routing);
             }
         });
     }

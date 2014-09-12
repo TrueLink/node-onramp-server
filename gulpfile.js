@@ -15,6 +15,7 @@ gulp.task('clean', function () {
     return gulp.src([
         'lib/**/*.js',
         'lib/**/*.d.ts',
+        'lib/**/*.map',
         ], { read: false })
     .pipe(rimraf({ force: true }));
 });
@@ -44,7 +45,10 @@ gulp.task('compile', function () {
         ;
 
     return result.js
-        .pipe(sourcemaps.write())
+        .pipe(sourcemaps.write('.', {
+            includeContent: false, 
+            sourceRoot: '/src'
+        }))
         .pipe(gulp.dest('lib'))
         ;
 });

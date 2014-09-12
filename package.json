@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "gulp": "^3.8.8",
+    "gulp-chug": "^0.3.0",
     "gulp-rimraf": "^0.1.0",
     "gulp-sourcemaps": "^1.1.5",
     "gulp-type": "^0.3.0",

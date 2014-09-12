@@ -3,12 +3,26 @@ var ts = require('gulp-type');
 var rimraf = require('gulp-rimraf');
 var runSequence = require('run-sequence');
 var sourcemaps = require('gulp-sourcemaps');
+var chug = require('gulp-chug');
+var path = require("path");
 
 gulp.task('default', function(done) {
     runSequence(
+        [
+            "build:browser-relay-client",
+        ],
         "clean", 
         "compile", 
         done);
+});
+
+function build_dep(name) {
+    var filepath = path.join("./node_modules", name, "gulpfile.js");
+    return gulp.src(filepath).pipe(chug())
+}
+
+gulp.task("build:browser-relay-client", function (done) {
+    return build_dep("browser-relay-client");
 });
 
 gulp.task('clean', function () {

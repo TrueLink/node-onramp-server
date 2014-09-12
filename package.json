@@ -30,8 +30,10 @@
     "websocket": "^1.0.8"
   },
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-clean": "^0.6.0",
-    "grunt-ts": "^1.11.6"
+    "gulp": "^3.8.8",
+    "gulp-rimraf": "^0.1.0",
+    "gulp-sourcemaps": "^1.1.5",
+    "gulp-type": "^0.3.0",
+    "run-sequence": "^0.3.6"
   }
 }

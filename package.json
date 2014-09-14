@@ -10,6 +10,7 @@
     "type": "git",
     "url": "https://github.com/overelay/node-onramp-server.git"
   },
+  "private": true,
   "author": "Eugene Chernyshov <chernyshov.eugene@gmail.com>",
   "licenses": [
     {

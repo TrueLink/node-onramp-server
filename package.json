@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/overelay/node-onramp-server",
   "dependencies": {
-    "browser-relay-client": "git+http://github.com/overelay/browser-relay-client.git#master",
+    "browser-relay-client": "git://github.com/overelay/browser-relay-client#v0.1.4",
     "commander": "^2.3.0",
     "node-uuid": "^1.4.1",
     "typescript": "^1.0.1",

@@ -15,14 +15,14 @@ export interface RelayData {
 }
 
 export interface API {
-    endpoint: string; // readonly
+    endpoint: string;
     connected(endpoint: string): void;
     disconnected(endpoint: string): void;
     addroutes(routes: any): void;
     relayed(endpoint: string, message: string): void;
-    onClose: event.Event<string>; // readonly
-    onRelay: event.Event<RelayData>; // readonly
-    onRoutesReceived: event.Event<any>; // readonly
+    onClose: event.Event<string>;
+    onRelay: event.Event<RelayData>;
+    onRoutesReceived: event.Event<any>;
 }
 
 // TODO: Add websocket subclass 

@@ -1,5 +1,5 @@
 var gulp = require('gulp');
-var ts = require('gulp-type');
+var ts = require('gulp-typescript');
 var rimraf = require('gulp-rimraf');
 var runSequence = require('run-sequence');
 var sourcemaps = require('gulp-sourcemaps');
@@ -41,7 +41,7 @@ gulp.task('compile', function () {
         module: 'commonjs',
         target: 'ES5',
         noImplicitAny: true, 
-        noLib: true, 
+        noLib: false, 
         outDir: 'lib',
     });
 

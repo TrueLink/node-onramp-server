@@ -40,8 +40,8 @@ gulp.task('compile', function () {
         noExternalResolve: false,
         module: 'commonjs',
         target: 'ES5',
-        noImplicitAny: true, 
-        noLib: false, 
+        noImplicitAny: true,
+        noLib: false,
         outDir: 'lib',
     });
 

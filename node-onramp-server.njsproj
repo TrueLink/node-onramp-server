@@ -19,6 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
+    <Content Include="LICENSE" />
     <Content Include="package.json" />
     <Content Include="tsd.json" />
     <Content Include="README.md" />
@@ -34,7 +35,6 @@
     <TypeScriptCompile Include="typings\websocket\websocket.d.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="lib" />
     <Folder Include="src" />
     <Folder Include="typings" />
     <Folder Include="typings\commander" />

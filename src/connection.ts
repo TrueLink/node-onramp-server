@@ -117,7 +117,7 @@ export class Connection extends protocol.Protocol implements protocol.Callbacks 
     }
 
     public readUserMessage(message: any): void {
-        console.error("onramp server have nothing to do with custom user messages\n\t" + message);
+        console.error("onramp server have nothing to do with custom user messages\n\t" + JSON.stringify(message));
     }
 }
 
